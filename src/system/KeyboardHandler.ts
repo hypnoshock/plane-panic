@@ -1,43 +1,92 @@
 import { Player } from '../game-objects/Player';
 
-export class KeyboardHandler {
-    private player: Player;
-    private keys: Set<string> = new Set();
-    private onRestart: () => void;
+type KeyboardEventHandler = (event: string, isPress: boolean) => void;
 
-    constructor(player: Player, onRestart: () => void) {
-        this.player = player;
-        this.onRestart = onRestart;
+export class KeyboardHandler {
+    private keys: Set<string> = new Set();
+    private pressedKeys: Set<string> = new Set();
+    private eventHandler: KeyboardEventHandler;
+
+    constructor(eventHandler: KeyboardEventHandler) {
+        this.eventHandler = eventHandler;
         this.setupEventListeners();
     }
 
     private setupEventListeners(): void {
         window.addEventListener('keydown', (event) => {
-            this.keys.add(event.key.toLowerCase());
+            const key = event.key.toLowerCase();
+            // Only handle game control keys
+            if (['w', 'a', 's', 'd', ' ', 'enter'].includes(key)) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (!this.keys.has(key)) {
+                    this.pressedKeys.add(key);
+                }
+                this.keys.add(key);
+            }
         });
 
         window.addEventListener('keyup', (event) => {
-            this.keys.delete(event.key.toLowerCase());
+            const key = event.key.toLowerCase();
+            // Only handle game control keys
+            if (['w', 'a', 's', 'd', ' ', 'enter'].includes(key)) {
+                event.preventDefault();
+                event.stopPropagation();
+                this.keys.delete(key);
+            }
         });
     }
 
     public update(): void {
-        if (this.player.isDead()) {
-            // Handle restart when game is over
-            if (this.keys.has('enter')) {
-                this.onRestart();
+        // First handle all press events
+        this.pressedKeys.forEach((key) => {
+            switch (key) {
+                case 'w':
+                    this.eventHandler('up', true);
+                    break;
+                case 's':
+                    this.eventHandler('down', true);
+                    break;
+                case 'a':
+                    this.eventHandler('left', true);
+                    break;
+                case 'd':
+                    this.eventHandler('right', true);
+                    break;
+                case ' ':
+                    this.eventHandler('button1', true);
+                    break;
+                case 'enter':
+                    this.eventHandler('button2', true);
+                    break;
             }
-            return;
-        }
+        });
 
-        if (this.keys.has('w')) this.player.moveUp();
-        if (this.keys.has('s')) this.player.moveDown();
-        if (this.keys.has('a')) this.player.moveLeft();
-        if (this.keys.has('d')) this.player.moveRight();
+        // Clear pressed keys after handling them
+        this.pressedKeys.clear();
 
-        // Handle shooting
-        if (this.keys.has(' ')) {
-            this.player.shoot();
-        }
+        // Then handle all hold events
+        this.keys.forEach((key) => {
+            switch (key) {
+                case 'w':
+                    this.eventHandler('up', false);
+                    break;
+                case 's':
+                    this.eventHandler('down', false);
+                    break;
+                case 'a':
+                    this.eventHandler('left', false);
+                    break;
+                case 'd':
+                    this.eventHandler('right', false);
+                    break;
+                case ' ':
+                    this.eventHandler('button1', false);
+                    break;
+                case 'enter':
+                    this.eventHandler('button2', false);
+                    break;
+            }
+        });
     }
 } 
