@@ -12,6 +12,31 @@ export class ScreenControlHandler {
         this.eventHandler = eventHandler;
         this.createControls();
         this.setupEventListeners();
+        
+        // Hide controls by default on non-mobile devices
+        if (!this.isMobileDevice()) {
+            this.hideControls();
+        }
+    }
+
+    private isMobileDevice(): boolean {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
+    public showControls(): void {
+        this.container.style.display = 'flex';
+    }
+
+    public hideControls(): void {
+        this.container.style.display = 'none';
+    }
+
+    public toggleControls(): void {
+        if (this.container.style.display === 'none') {
+            this.showControls();
+        } else {
+            this.hideControls();
+        }
     }
 
     private createControls(): void {
@@ -138,17 +163,23 @@ export class ScreenControlHandler {
         const deltaX = touch.clientX - centerX;
         const deltaY = touch.clientY - centerY;
         
-        // Calculate angle and distance from center
-        const angle = Math.atan2(deltaY, deltaX);
+        // Calculate distance from center
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         
         // Only trigger if touch is outside dead zone (20% of radius)
         if (distance > rect.width * 0.2) {
-            // Determine direction based on angle
-            if (Math.abs(angle) < Math.PI / 4) {
+            // Normalize the direction vector
+            const normalizedX = deltaX / distance;
+            const normalizedY = deltaY / distance;
+
+            // Use thresholds to determine direction
+            const threshold = 0.5; // Adjust this value to change sensitivity
+
+            // Horizontal movement
+            if (normalizedX > threshold) {
                 this.eventHandler('right', true);
                 this.eventHandler('left', false);
-            } else if (Math.abs(angle) > 3 * Math.PI / 4) {
+            } else if (normalizedX < -threshold) {
                 this.eventHandler('left', true);
                 this.eventHandler('right', false);
             } else {
@@ -156,16 +187,23 @@ export class ScreenControlHandler {
                 this.eventHandler('right', false);
             }
 
-            if (angle > Math.PI / 4 && angle < 3 * Math.PI / 4) {
+            // Vertical movement
+            if (normalizedY > threshold) {
                 this.eventHandler('down', true);
                 this.eventHandler('up', false);
-            } else if (angle < -Math.PI / 4 && angle > -3 * Math.PI / 4) {
+            } else if (normalizedY < -threshold) {
                 this.eventHandler('up', true);
                 this.eventHandler('down', false);
             } else {
                 this.eventHandler('up', false);
                 this.eventHandler('down', false);
             }
+        } else {
+            // Reset all directions when in dead zone
+            this.eventHandler('left', false);
+            this.eventHandler('right', false);
+            this.eventHandler('up', false);
+            this.eventHandler('down', false);
         }
     }
 
