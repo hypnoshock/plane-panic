@@ -4,6 +4,7 @@ import { Spaceship } from '../game-models/Spaceship';
 import { Player } from '../game-objects/Player';
 import { KeyboardHandler } from '../system/KeyboardHandler';
 import { ScreenControlHandler } from '../system/ScreenControlHandler';
+import { JoypadInputHandler } from '../system/JoypadInputHandler';
 import { BulletSystem } from '../system/BulletSystem';
 import { EnemySpawner } from '../system/EnemySpawner';
 import { GameStateManager } from './GameStateManager';
@@ -18,6 +19,7 @@ export class PlayState implements GameState {
     private enemySpawner: EnemySpawner;
     private keyboardHandler!: KeyboardHandler;
     private screenControlHandler!: ScreenControlHandler;
+    private joypadHandler!: JoypadInputHandler;
     private gameOverScreen: HTMLDivElement;
     private energyDisplay: HTMLDivElement;
     private isGameOver: boolean = false;
@@ -103,6 +105,11 @@ export class PlayState implements GameState {
         this.screenControlHandler = new ScreenControlHandler((event: string, isPress: boolean) => {
             this.handleInput(event, isPress);
         });
+
+        // Create joypad handler with event handler
+        this.joypadHandler = new JoypadInputHandler((event: string, isPress: boolean) => {
+            this.handleInput(event, isPress);
+        });
     }
 
     private handleInput(event: string, isPress: boolean): void {
@@ -183,6 +190,7 @@ export class PlayState implements GameState {
         // Clean up input handlers
         this.screenControlHandler.destroy();
         this.keyboardHandler.destroy();
+        this.joypadHandler.destroy();
 
         // Clean up background texture
         if (this.backgroundTexture) {
@@ -215,6 +223,7 @@ export class PlayState implements GameState {
         this.player.update(deltaTime);
         this.keyboardHandler.update();
         this.screenControlHandler.update();
+        this.joypadHandler.update();
         this.bulletSystem.update(deltaTime);
         this.enemySpawner.update(deltaTime);
         this.cloudBackground.update(deltaTime);

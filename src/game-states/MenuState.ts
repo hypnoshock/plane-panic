@@ -7,6 +7,7 @@ import { AudioSystem } from '../system/AudioSystem';
 import { EnemyShip } from '../game-models/EnemyShip';
 import { FastEnemyShipModel } from '../game-models/FastEnemyShipModel';
 import { ScreenControlHandler } from '../system/ScreenControlHandler';
+import { JoypadInputHandler } from '../system/JoypadInputHandler';
 
 export class MenuState implements GameState {
     private scene: THREE.Scene;
@@ -18,6 +19,7 @@ export class MenuState implements GameState {
     private options: string[] = ['Start Game', 'High Scores'];
     private keyboardHandler!: KeyboardHandler;
     private screenControlHandler?: ScreenControlHandler;
+    private joypadHandler?: JoypadInputHandler;
     private backgroundTexture: THREE.CanvasTexture | null = null;
     private audioSystem: AudioSystem;
     private menuShips: THREE.Group[] = [];
@@ -89,6 +91,7 @@ export class MenuState implements GameState {
 
         this.keyboardHandler = new KeyboardHandler(inputHandler);
         this.screenControlHandler = new ScreenControlHandler(inputHandler);
+        this.joypadHandler = new JoypadInputHandler(inputHandler);
     }
 
     private setupMenuShips(): void {
@@ -212,6 +215,7 @@ export class MenuState implements GameState {
 
         this.screenControlHandler?.destroy();
         this.keyboardHandler.destroy();
+        this.joypadHandler?.destroy();
     }
 
     update(): void {
@@ -220,6 +224,8 @@ export class MenuState implements GameState {
         this.lastUpdateTime = currentTime;
 
         this.keyboardHandler.update();
+        this.screenControlHandler?.update();
+        this.joypadHandler?.update();
         this.updateMenuShips(deltaTime);
     }
 
