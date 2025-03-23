@@ -148,12 +148,16 @@ export class PlayState implements GameState {
     public enter(): void {
         this.setupBackground();
         this.resetGame();
+        this.audioSystem.playMusic();
     }
 
     public exit(): void {
         // Clean up UI elements
         this.gameOverScreen.remove();
         this.energyDisplay.remove();
+
+        // Stop music
+        this.audioSystem.stopMusic();
 
         // Clean up game objects
         this.scene.remove(this.player.getGroup());

@@ -1,11 +1,101 @@
 export class AudioSystem {
     private audioContext: AudioContext;
     private masterGainNode: GainNode;
+    private musicGainNode: GainNode;
+    private musicOscillator: OscillatorNode | null = null;
+    private musicGain: GainNode | null = null;
+    private musicFilter: BiquadFilterNode | null = null;
+    private isMusicPlaying: boolean = false;
 
     constructor() {
         this.audioContext = new AudioContext();
         this.masterGainNode = this.audioContext.createGain();
+        this.musicGainNode = this.audioContext.createGain();
         this.masterGainNode.connect(this.audioContext.destination);
+        this.musicGainNode.connect(this.masterGainNode);
+    }
+
+    public playMusic(): void {
+        if (this.isMusicPlaying) return;
+        this.isMusicPlaying = true;
+
+        // Create main oscillator for melody
+        this.musicOscillator = this.audioContext.createOscillator();
+        this.musicGain = this.audioContext.createGain();
+        this.musicFilter = this.audioContext.createBiquadFilter();
+
+        // Configure filter
+        this.musicFilter.type = 'lowpass';
+        this.musicFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
+        this.musicFilter.Q.setValueAtTime(1, this.audioContext.currentTime);
+
+        // Configure gain
+        this.musicGain.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+
+        // Connect nodes
+        this.musicOscillator.connect(this.musicFilter);
+        this.musicFilter.connect(this.musicGain);
+        this.musicGain.connect(this.musicGainNode);
+
+        // Define melody notes (in Hz)
+        const melody = [
+            220, 277.18, 329.63, 440,  // A3, C#4, E4, A4
+            220, 277.18, 329.63, 440,  // A3, C#4, E4, A4
+            246.94, 293.66, 349.23, 493.88,  // B3, D4, F4, B4
+            246.94, 293.66, 349.23, 493.88,  // B3, D4, F4, B4
+            220, 277.18, 329.63, 440,  // A3, C#4, E4, A4
+            220, 277.18, 329.63, 440,  // A3, C#4, E4, A4
+            246.94, 293.66, 349.23, 493.88,  // B3, D4, F4, B4
+            246.94, 293.66, 349.23, 493.88   // B3, D4, F4, B4
+        ];
+
+        // Create a repeating melody
+        let time = this.audioContext.currentTime;
+        const noteDuration = 0.25; // Duration of each note in seconds (halved from 0.5)
+        const loopDuration = noteDuration * melody.length;
+
+        const playNote = (noteIndex: number) => {
+            if (!this.isMusicPlaying) return;
+
+            const frequency = melody[noteIndex];
+            this.musicOscillator!.frequency.setValueAtTime(frequency, time);
+            
+            // Add slight filter modulation for interest
+            this.musicFilter!.frequency.setValueAtTime(2000, time);
+            this.musicFilter!.frequency.exponentialRampToValueAtTime(1000, time + noteDuration);
+
+            // Schedule next note
+            time += noteDuration;
+            if (noteIndex < melody.length - 1) {
+                setTimeout(() => playNote(noteIndex + 1), noteDuration * 1000);
+            } else {
+                // Loop back to start
+                setTimeout(() => playNote(0), noteDuration * 1000);
+            }
+        };
+
+        // Start the melody
+        this.musicOscillator.start(time);
+        playNote(0);
+    }
+
+    public stopMusic(): void {
+        if (!this.isMusicPlaying) return;
+        this.isMusicPlaying = false;
+
+        if (this.musicOscillator) {
+            this.musicOscillator.stop(this.audioContext.currentTime);
+            this.musicOscillator.disconnect();
+            this.musicOscillator = null;
+        }
+        if (this.musicGain) {
+            this.musicGain.disconnect();
+            this.musicGain = null;
+        }
+        if (this.musicFilter) {
+            this.musicFilter.disconnect();
+            this.musicFilter = null;
+        }
     }
 
     public playBullet(): void {
@@ -102,6 +192,7 @@ export class AudioSystem {
     }
 
     public cleanup(): void {
+        this.stopMusic();
         this.audioContext.close();
     }
 } 
