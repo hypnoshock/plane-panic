@@ -7,6 +7,7 @@ import { BulletSystem } from '../system/BulletSystem';
 import { EnemySpawner } from '../system/EnemySpawner';
 import { GameStateManager } from './GameStateManager';
 import { MenuState } from './MenuState';
+import { CloudBackground } from '../game-objects/CloudBackground';
 
 export class PlayState implements GameState {
     private bulletSystem: BulletSystem;
@@ -19,6 +20,7 @@ export class PlayState implements GameState {
     private gameStateManager!: GameStateManager;
     private backgroundTexture: THREE.CanvasTexture | null = null;
     private currentDeltaTime: number = 0;
+    private cloudBackground: CloudBackground;
 
     // Input flags
     private inputFlags = {
@@ -47,6 +49,10 @@ export class PlayState implements GameState {
         // Create enemy spawner
         this.enemySpawner = new EnemySpawner(scene, this.bulletSystem);
         this.bulletSystem.setEnemySpawner(this.enemySpawner);
+
+        // Create cloud background
+        this.cloudBackground = new CloudBackground();
+        scene.add(this.cloudBackground.getGroup());
 
         // Create game over screen
         this.gameOverScreen = document.createElement('div');
@@ -142,6 +148,7 @@ export class PlayState implements GameState {
 
         // Clean up game objects
         this.scene.remove(this.player.getGroup());
+        this.scene.remove(this.cloudBackground.getGroup());
         this.enemySpawner.clearEnemies();
         this.bulletSystem.clearBullets();
         this.bulletSystem.cleanup();
@@ -180,6 +187,7 @@ export class PlayState implements GameState {
         this.keyboardHandler.update();
         this.bulletSystem.update(deltaTime);
         this.enemySpawner.update(deltaTime);
+        this.cloudBackground.update(deltaTime);
 
         // Update energy display
         this.energyDisplay.textContent = `Energy: ${this.player.getLives()}`;
