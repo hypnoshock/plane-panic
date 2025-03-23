@@ -5,6 +5,7 @@ import { Player } from '../game-objects/Player';
 import { Enemy } from '../game-objects/Enemy';
 import { ScoreSystem } from './ScoreSystem';
 import { EnemySpawner } from './EnemySpawner';
+import { ExplosionSystem } from './ExplosionSystem';
 
 export class BulletSystem {
     private bullets: Bullet[] = [];
@@ -13,10 +14,12 @@ export class BulletSystem {
     private enemies: Enemy[] = [];
     private scoreSystem: ScoreSystem;
     private enemySpawner: EnemySpawner | null = null;
+    private explosionSystem: ExplosionSystem;
 
     constructor(scene: THREE.Scene) {
         this.scene = scene;
         this.scoreSystem = new ScoreSystem();
+        this.explosionSystem = new ExplosionSystem(scene);
     }
 
     public setEnemySpawner(spawner: EnemySpawner): void {
@@ -46,9 +49,12 @@ export class BulletSystem {
         this.bullets.push(bullet);
     }
 
-    public update(): void {
+    public update(deltaTime: number): void {
         // Update all bullets
         this.bullets.forEach(bullet => bullet.update());
+
+        // Update explosion system
+        this.explosionSystem.update(deltaTime);
 
         if (!this.player) return;
 
@@ -76,6 +82,10 @@ export class BulletSystem {
                     const enemyPosition = enemy.getPosition();
                     const distanceToEnemy = position.distanceTo(enemyPosition);
                     if (distanceToEnemy < collisionDistance) {
+                        // First spawn the explosion at the enemy's current position
+                        this.explosionSystem.spawnExplosion(enemyPosition);
+                        
+                        // Then handle the enemy destruction
                         this.removeEnemy(enemy);
                         this.scene.remove(enemy.getGroup());
                         this.scene.remove(bullet.getGroup());
@@ -115,5 +125,6 @@ export class BulletSystem {
 
     public cleanup(): void {
         this.scoreSystem.cleanup();
+        this.explosionSystem.cleanup();
     }
 } 

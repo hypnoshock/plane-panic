@@ -48,10 +48,17 @@ const menuState = new MenuState(scene, camera, renderer);
 menuState.setGameStateManager(gameStateManager);
 gameStateManager.setState(menuState);
 
+let lastTime = 0;
+
 // Animation loop
-function animate(): void {
+function animate(currentTime: number): void {
     requestAnimationFrame(animate);
-    gameStateManager.update();
+    
+    // Calculate deltaTime in seconds
+    const deltaTime = (currentTime - lastTime) / 1000;
+    lastTime = currentTime;
+    
+    gameStateManager.update(deltaTime);
     gameStateManager.render();
 }
 
@@ -63,4 +70,4 @@ window.addEventListener('resize', () => {
 }, false);
 
 // Start animation
-animate(); 
+animate(0); 

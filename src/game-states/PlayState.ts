@@ -146,10 +146,10 @@ export class PlayState implements GameState {
         this.scene.background = null;
     }
 
-    public update(): void {
+    public update(deltaTime: number): void {
         this.player.update();
         this.keyboardHandler.update();
-        this.bulletSystem.update();
+        this.bulletSystem.update(deltaTime);
         this.enemySpawner.update();
 
         // Update energy display
@@ -168,8 +168,6 @@ export class PlayState implements GameState {
     }
 
     private resetGame(): void {
-        console.log('resetGame');
-        console.trace();
         // Reset player
         this.player.reset();
         this.player.getGroup().visible = true;

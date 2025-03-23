@@ -14,9 +14,9 @@ export class GameStateManager {
         this.currentState.enter();
     }
 
-    public update(): void {
+    public update(deltaTime: number): void {
         if (this.currentState) {
-            this.currentState.update();
+            this.currentState.update(deltaTime);
         }
     }
 
