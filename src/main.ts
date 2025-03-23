@@ -30,12 +30,15 @@ document.body.appendChild(gameOverScreen);
 // Create FPS counter
 const fpsCounter = document.createElement('div');
 fpsCounter.style.position = 'absolute';
-fpsCounter.style.top = '20px';
+fpsCounter.style.bottom = '20px';
 fpsCounter.style.right = '20px';
 fpsCounter.style.color = 'white';
 fpsCounter.style.fontSize = '16px';
 fpsCounter.style.fontFamily = 'Arial, sans-serif';
 fpsCounter.style.zIndex = '1000';
+fpsCounter.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+fpsCounter.style.padding = '8px 12px';
+fpsCounter.style.borderRadius = '4px';
 document.body.appendChild(fpsCounter);
 
 // FPS calculation variables
