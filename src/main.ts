@@ -1,8 +1,6 @@
 import './style.css'
 import * as THREE from 'three';
-import { KeyboardHandler } from './system/KeyboardHandler';
 import { GameStateManager } from './game-states/GameStateManager';
-import { PlayState } from './game-states/PlayState';
 import { MenuState } from './game-states/MenuState';
 
 // Create scene, camera, and renderer
@@ -29,8 +27,24 @@ gameOverScreen.className = 'game-over';
 gameOverScreen.innerHTML = 'GAME OVER<br/>Press RETURN to restart';
 document.body.appendChild(gameOverScreen);
 
+// Create FPS counter
+const fpsCounter = document.createElement('div');
+fpsCounter.style.position = 'absolute';
+fpsCounter.style.top = '20px';
+fpsCounter.style.right = '20px';
+fpsCounter.style.color = 'white';
+fpsCounter.style.fontSize = '16px';
+fpsCounter.style.fontFamily = 'Arial, sans-serif';
+fpsCounter.style.zIndex = '1000';
+document.body.appendChild(fpsCounter);
+
 // Game state
 let isGameOver: boolean = false;
+
+// FPS calculation variables
+let frameCount = 0;
+let lastFpsUpdate = 0;
+const fpsUpdateInterval = 500; // Update FPS display every 500ms
 
 function resetGame(): void {
     // Hide game over screen
@@ -57,6 +71,15 @@ function animate(currentTime: number): void {
     // Calculate deltaTime in seconds
     const deltaTime = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
+    
+    // Update FPS counter
+    frameCount++;
+    if (currentTime - lastFpsUpdate >= fpsUpdateInterval) {
+        const fps = Math.round((frameCount * 1000) / (currentTime - lastFpsUpdate));
+        fpsCounter.textContent = `FPS: ${fps}`;
+        frameCount = 0;
+        lastFpsUpdate = currentTime;
+    }
     
     gameStateManager.update(deltaTime);
     gameStateManager.render();
