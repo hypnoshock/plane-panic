@@ -18,6 +18,16 @@ export class PlayState implements GameState {
     private isGameOver: boolean = false;
     private gameStateManager!: GameStateManager;
     private backgroundTexture: THREE.CanvasTexture | null = null;
+    private currentDeltaTime: number = 0;
+
+    // Input flags
+    private inputFlags = {
+        moveUp: false,
+        moveDown: false,
+        moveLeft: false,
+        moveRight: false,
+        shoot: false
+    };
 
     constructor(
         private scene: THREE.Scene,
@@ -79,21 +89,19 @@ export class PlayState implements GameState {
 
             switch (event) {
                 case 'up':
-                    this.player.moveUp();
+                    this.inputFlags.moveUp = isPress;
                     break;
                 case 'down':
-                    this.player.moveDown();
+                    this.inputFlags.moveDown = isPress;
                     break;
                 case 'left':
-                    this.player.moveLeft();
+                    this.inputFlags.moveLeft = isPress;
                     break;
                 case 'right':
-                    this.player.moveRight();
+                    this.inputFlags.moveRight = isPress;
                     break;
                 case 'button1':
-                    if (isPress) {
-                        this.player.shoot();
-                    }
+                    this.inputFlags.shoot = isPress;
                     break;
             }
         });
@@ -147,7 +155,28 @@ export class PlayState implements GameState {
     }
 
     public update(deltaTime: number): void {
-        this.player.update();
+        this.currentDeltaTime = deltaTime;
+        
+        // Handle player input if not dead
+        if (!this.player.isDead()) {
+            if (this.inputFlags.moveUp) {
+                this.player.moveUp(deltaTime);
+            }
+            if (this.inputFlags.moveDown) {
+                this.player.moveDown(deltaTime);
+            }
+            if (this.inputFlags.moveLeft) {
+                this.player.moveLeft(deltaTime);
+            }
+            if (this.inputFlags.moveRight) {
+                this.player.moveRight(deltaTime);
+            }
+            if (this.inputFlags.shoot) {
+                this.player.shoot(deltaTime);
+            }
+        }
+
+        this.player.update(deltaTime);
         this.keyboardHandler.update();
         this.bulletSystem.update(deltaTime);
         this.enemySpawner.update();

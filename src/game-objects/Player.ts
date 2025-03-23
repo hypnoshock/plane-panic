@@ -5,10 +5,10 @@ import { BulletSystem } from '../system/BulletSystem';
 export class Player {
     private model: Spaceship;
     private group: THREE.Group;
-    private moveSpeed: number = 0.1;
+    private moveSpeed: number = 5; // Units per second
     private bulletSystem: BulletSystem | null = null;
     private lastSpacePress: number = 0;
-    private fireRate: number = 250; // Minimum time between shots in milliseconds
+    private fireRate: number = 0.25; // Minimum time between shots in seconds
     private initialPosition: THREE.Vector3;
     private lives: number = 3;
     private isGameOver: boolean = false;
@@ -30,7 +30,7 @@ export class Player {
         this.bulletSystem = bulletSystem;
     }
 
-    public update(): void {
+    public update(deltaTime: number): void {
         if (this.isGameOver) return;
         this.model.update();
 
@@ -62,27 +62,27 @@ export class Player {
         this.group.position.copy(this.initialPosition);
     }
 
-    public moveUp(): void {
-        this.group.position.y += this.moveSpeed;
+    public moveUp(deltaTime: number): void {
+        this.group.position.y += this.moveSpeed * deltaTime;
     }
 
-    public moveDown(): void {
-        this.group.position.y -= this.moveSpeed;
+    public moveDown(deltaTime: number): void {
+        this.group.position.y -= this.moveSpeed * deltaTime;
     }
 
-    public moveLeft(): void {
-        this.group.position.x -= this.moveSpeed;
+    public moveLeft(deltaTime: number): void {
+        this.group.position.x -= this.moveSpeed * deltaTime;
     }
 
-    public moveRight(): void {
-        this.group.position.x += this.moveSpeed;
+    public moveRight(deltaTime: number): void {
+        this.group.position.x += this.moveSpeed * deltaTime;
     }
 
-    public shoot(): void {
+    public shoot(deltaTime: number): void {
         if (!this.bulletSystem) return;
         
         const currentTime = Date.now();
-        if (currentTime - this.lastSpacePress >= this.fireRate) {
+        if (currentTime - this.lastSpacePress >= this.fireRate * 1000) {
             const playerPosition = this.group.position;
             // Spawn bullet in front of the ship (along X axis since ship is rotated 90 degrees around Y)
             const bulletPosition = new THREE.Vector3(
