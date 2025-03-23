@@ -18,6 +18,7 @@ Plane Panic is a modern space shooter game that combines classic arcade-style ga
 ### Input Systems
 - **Keyboard Handler**: Traditional keyboard controls for desktop play
 - **Screen Control Handler**: Touch controls for mobile devices
+- **Joypad Handler**: Gamepad/controller support for enhanced gameplay experience
 
 ### Audio System
 - Background music and sound effects for enhanced gameplay experience
@@ -26,9 +27,9 @@ Plane Panic is a modern space shooter game that combines classic arcade-style ga
 ## Gameplay
 
 ### Controls
-- **Movement**: Use arrow keys or touch controls to navigate your spaceship
-- **Shooting**: Press spacebar or tap to shoot at enemies
-- **Menu Navigation**: Use the B button to return to the main menu
+- **Movement**: Use arrow keys, touch controls, or gamepad sticks to navigate your spaceship
+- **Shooting**: Press spacebar, tap, or use gamepad button to shoot at enemies
+- **Menu Navigation**: Use the B button or gamepad button to return to the main menu
 
 ### Objectives
 - Survive waves of incoming enemies
