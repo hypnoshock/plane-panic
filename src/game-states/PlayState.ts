@@ -43,7 +43,7 @@ export class PlayState implements GameState {
         this.audioSystem = new AudioSystem();
 
         // Create explosion system
-        this.explosionSystem = new ExplosionSystem(scene);
+        this.explosionSystem = new ExplosionSystem(scene, this.audioSystem);
 
         // Create bullet system
         this.bulletSystem = new BulletSystem(scene, this.explosionSystem, this.audioSystem);

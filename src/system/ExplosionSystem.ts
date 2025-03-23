@@ -1,12 +1,15 @@
 import * as THREE from 'three';
 import { Explosion } from '../game-objects/Explosion';
+import { AudioSystem } from './AudioSystem';
 
 export class ExplosionSystem {
     private explosions: Explosion[] = [];
     private scene: THREE.Scene;
+    private audioSystem: AudioSystem;
 
-    constructor(scene: THREE.Scene) {
+    constructor(scene: THREE.Scene, audioSystem: AudioSystem) {
         this.scene = scene;
+        this.audioSystem = audioSystem;
     }
 
     public spawnExplosion(position: THREE.Vector3): void {
@@ -14,6 +17,10 @@ export class ExplosionSystem {
         explosion.setPosition(position.x, position.y, position.z);
         this.scene.add(explosion.getGroup());
         this.explosions.push(explosion);
+        
+        // Play explosion sound effect
+        this.audioSystem.playExplosion();
+        
         console.log('Current active explosions:', this.explosions.length);
     }
 

@@ -38,6 +38,69 @@ export class AudioSystem {
         };
     }
 
+    public playExplosion(): void {
+        const now = this.audioContext.currentTime;
+        const duration = 0.5; // Duration of the explosion sound
+
+        // Create noise generator
+        const noise = this.audioContext.createBufferSource();
+        const noiseGain = this.audioContext.createGain();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        
+        // Generate white noise
+        const bufferSize = this.audioContext.sampleRate * duration;
+        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        noise.buffer = buffer;
+
+        // Configure noise filter
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.setValueAtTime(1000, now);
+        noiseFilter.frequency.exponentialRampToValueAtTime(100, now + duration);
+        noiseFilter.Q.setValueAtTime(1, now);
+
+        // Configure noise envelope
+        noiseGain.gain.setValueAtTime(0, now);
+        noiseGain.gain.linearRampToValueAtTime(0.5, now + 0.01);
+        noiseGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+        // Create low frequency oscillator for rumble
+        const lfo = this.audioContext.createOscillator();
+        const lfoGain = this.audioContext.createGain();
+        lfo.type = 'sine';
+        lfo.frequency.setValueAtTime(20, now);
+        lfo.frequency.exponentialRampToValueAtTime(5, now + duration);
+        lfoGain.gain.setValueAtTime(0.3, now);
+        lfoGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+        // Connect nodes
+        noise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(this.masterGainNode);
+        lfo.connect(lfoGain);
+        lfoGain.connect(this.masterGainNode);
+
+        // Start and stop sounds
+        noise.start(now);
+        noise.stop(now + duration);
+        lfo.start(now);
+        lfo.stop(now + duration);
+
+        // Clean up nodes after they're done
+        noise.onended = () => {
+            noise.disconnect();
+            noiseFilter.disconnect();
+            noiseGain.disconnect();
+        };
+        lfo.onended = () => {
+            lfo.disconnect();
+            lfoGain.disconnect();
+        };
+    }
+
     public cleanup(): void {
         this.audioContext.close();
     }
