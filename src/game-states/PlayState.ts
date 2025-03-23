@@ -8,6 +8,7 @@ import { EnemySpawner } from '../system/EnemySpawner';
 import { GameStateManager } from './GameStateManager';
 import { MenuState } from './MenuState';
 import { CloudBackground } from '../game-objects/CloudBackground';
+import { ExplosionSystem } from '../system/ExplosionSystem';
 
 export class PlayState implements GameState {
     private bulletSystem: BulletSystem;
@@ -21,6 +22,7 @@ export class PlayState implements GameState {
     private backgroundTexture: THREE.CanvasTexture | null = null;
     private currentDeltaTime: number = 0;
     private cloudBackground: CloudBackground;
+    private explosionSystem: ExplosionSystem;
 
     // Input flags
     private inputFlags = {
@@ -36,8 +38,11 @@ export class PlayState implements GameState {
         private camera: THREE.PerspectiveCamera,
         private renderer: THREE.WebGLRenderer
     ) {
+        // Create explosion system
+        this.explosionSystem = new ExplosionSystem(scene);
+
         // Create bullet system
-        this.bulletSystem = new BulletSystem(scene);
+        this.bulletSystem = new BulletSystem(scene, this.explosionSystem);
 
         // Create player with spaceship
         const spaceship = new Spaceship();
@@ -149,6 +154,7 @@ export class PlayState implements GameState {
         // Clean up game objects
         this.scene.remove(this.player.getGroup());
         this.scene.remove(this.cloudBackground.getGroup());
+        this.explosionSystem.cleanup();
         this.enemySpawner.clearEnemies();
         this.bulletSystem.clearBullets();
         this.bulletSystem.cleanup();
@@ -188,6 +194,7 @@ export class PlayState implements GameState {
         this.bulletSystem.update(deltaTime);
         this.enemySpawner.update(deltaTime);
         this.cloudBackground.update(deltaTime);
+        this.explosionSystem.update(deltaTime);
 
         // Update energy display
         this.energyDisplay.textContent = `Energy: ${this.player.getLives()}`;
@@ -197,6 +204,10 @@ export class PlayState implements GameState {
             this.isGameOver = true;
             this.gameOverScreen.classList.add('visible');
             this.player.setGameOver();
+            
+            // Create explosion at player's position using ExplosionSystem
+            const playerPosition = this.player.getGroup().position;
+            this.explosionSystem.spawnExplosion(playerPosition);
         }
     }
 

@@ -16,10 +16,10 @@ export class BulletSystem {
     private enemySpawner: EnemySpawner | null = null;
     private explosionSystem: ExplosionSystem;
 
-    constructor(scene: THREE.Scene) {
+    constructor(scene: THREE.Scene, explosionSystem: ExplosionSystem) {
         this.scene = scene;
         this.scoreSystem = new ScoreSystem();
-        this.explosionSystem = new ExplosionSystem(scene);
+        this.explosionSystem = explosionSystem;
     }
 
     public setEnemySpawner(spawner: EnemySpawner): void {
@@ -52,9 +52,6 @@ export class BulletSystem {
     public update(deltaTime: number): void {
         // Update all bullets
         this.bullets.forEach(bullet => bullet.update(deltaTime));
-
-        // Update explosion system
-        this.explosionSystem.update(deltaTime);
 
         if (!this.player) return;
 
@@ -125,6 +122,5 @@ export class BulletSystem {
 
     public cleanup(): void {
         this.scoreSystem.cleanup();
-        this.explosionSystem.cleanup();
     }
 } 
