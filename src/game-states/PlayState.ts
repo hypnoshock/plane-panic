@@ -9,6 +9,7 @@ import { GameStateManager } from './GameStateManager';
 import { MenuState } from './MenuState';
 import { CloudBackground } from '../game-objects/CloudBackground';
 import { ExplosionSystem } from '../system/ExplosionSystem';
+import { AudioSystem } from '../system/AudioSystem';
 
 export class PlayState implements GameState {
     private bulletSystem: BulletSystem;
@@ -20,9 +21,9 @@ export class PlayState implements GameState {
     private isGameOver: boolean = false;
     private gameStateManager!: GameStateManager;
     private backgroundTexture: THREE.CanvasTexture | null = null;
-    private currentDeltaTime: number = 0;
     private cloudBackground: CloudBackground;
     private explosionSystem: ExplosionSystem;
+    private audioSystem: AudioSystem;
 
     // Input flags
     private inputFlags = {
@@ -38,11 +39,14 @@ export class PlayState implements GameState {
         private camera: THREE.PerspectiveCamera,
         private renderer: THREE.WebGLRenderer
     ) {
+        // Create audio system
+        this.audioSystem = new AudioSystem();
+
         // Create explosion system
         this.explosionSystem = new ExplosionSystem(scene);
 
         // Create bullet system
-        this.bulletSystem = new BulletSystem(scene, this.explosionSystem);
+        this.bulletSystem = new BulletSystem(scene, this.explosionSystem, this.audioSystem);
 
         // Create player with spaceship
         const spaceship = new Spaceship();
@@ -158,6 +162,7 @@ export class PlayState implements GameState {
         this.enemySpawner.clearEnemies();
         this.bulletSystem.clearBullets();
         this.bulletSystem.cleanup();
+        this.audioSystem.cleanup();
 
         // Clean up background texture
         if (this.backgroundTexture) {
@@ -167,9 +172,7 @@ export class PlayState implements GameState {
         this.scene.background = null;
     }
 
-    public update(deltaTime: number): void {
-        this.currentDeltaTime = deltaTime;
-        
+    public update(deltaTime: number): void {        
         // Handle player input if not dead
         if (!this.player.isDead()) {
             if (this.inputFlags.moveUp) {

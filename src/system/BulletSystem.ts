@@ -6,6 +6,7 @@ import { Enemy } from '../game-objects/Enemy';
 import { ScoreSystem } from './ScoreSystem';
 import { EnemySpawner } from './EnemySpawner';
 import { ExplosionSystem } from './ExplosionSystem';
+import { AudioSystem } from './AudioSystem';
 
 export class BulletSystem {
     private bullets: Bullet[] = [];
@@ -15,11 +16,13 @@ export class BulletSystem {
     private scoreSystem: ScoreSystem;
     private enemySpawner: EnemySpawner | null = null;
     private explosionSystem: ExplosionSystem;
+    private audioSystem: AudioSystem;
 
-    constructor(scene: THREE.Scene, explosionSystem: ExplosionSystem) {
+    constructor(scene: THREE.Scene, explosionSystem: ExplosionSystem, audioSystem: AudioSystem) {
         this.scene = scene;
         this.scoreSystem = new ScoreSystem();
         this.explosionSystem = explosionSystem;
+        this.audioSystem = audioSystem;
     }
 
     public setEnemySpawner(spawner: EnemySpawner): void {
@@ -47,6 +50,9 @@ export class BulletSystem {
         bullet.setPosition(position.x, position.y, position.z);
         this.scene.add(bullet.getGroup());
         this.bullets.push(bullet);
+        
+        // Play bullet sound effect
+        this.audioSystem.playBullet();
     }
 
     public update(deltaTime: number): void {
