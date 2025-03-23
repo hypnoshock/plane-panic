@@ -1,4 +1,4 @@
-# Plane Panic
+# Plane Panic - A vibe coding experiment 90% AI generated using Cursor
 
 A thrilling space shooter game where you pilot a spaceship through waves of enemies while managing your energy and survival.
 
