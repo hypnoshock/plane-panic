@@ -94,9 +94,27 @@ export class MenuState implements GameState {
     }
 
     private updateMenuDisplay(): void {
-        this.menuContainer.innerHTML = this.options.map((option, index) => 
-            `<div style="margin: 20px; cursor: pointer; ${index === this.selectedOption ? 'color: #ff0000;' : ''}">${option}</div>`
-        ).join('');
+        this.menuContainer.innerHTML = `
+            <style>
+                @keyframes gentleRotate {
+                    0% { transform: rotate(-2deg); }
+                    50% { transform: rotate(2deg); }
+                    100% { transform: rotate(-2deg); }
+                }
+                .title {
+                    font-size: 72px;
+                    font-weight: bold;
+                    margin-bottom: 40px;
+                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+                    animation: gentleRotate 3s ease-in-out infinite;
+                    display: inline-block;
+                }
+            </style>
+            <div class="title">Plane Panic</div>
+            ${this.options.map((option, index) => 
+                `<div style="margin: 20px; cursor: pointer; ${index === this.selectedOption ? 'color: #ff0000;' : ''}">${option}</div>`
+            ).join('')}
+        `;
     }
 
     enter(): void {
