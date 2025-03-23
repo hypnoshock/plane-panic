@@ -13,12 +13,12 @@ export class MenuState implements GameState {
     private selectedOption: number = 0;
     private options: string[] = ['Start Game', 'High Scores'];
     private keyboardHandler!: KeyboardHandler;
+    private backgroundTexture: THREE.CanvasTexture | null = null;
 
     constructor(scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) {
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
-        this.setupBackground();
         this.setupMenu();
         this.setupKeyboardHandler();
     }
@@ -37,9 +37,9 @@ export class MenuState implements GameState {
             context.fillRect(0, 0, canvas.width, canvas.height);
         }
 
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.needsUpdate = true;
-        this.scene.background = texture;
+        this.backgroundTexture = new THREE.CanvasTexture(canvas);
+        this.backgroundTexture.needsUpdate = true;
+        this.scene.background = this.backgroundTexture;
     }
 
     private setupMenu(): void {
@@ -97,11 +97,16 @@ export class MenuState implements GameState {
     }
 
     enter(): void {
+        this.setupBackground();
         this.updateMenuDisplay();
     }
 
     exit(): void {
         this.menuContainer.remove();
+        if (this.backgroundTexture) {
+            this.backgroundTexture.dispose();
+            this.backgroundTexture = null;
+        }
         this.scene.background = null;
     }
 

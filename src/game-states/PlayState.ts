@@ -17,29 +17,13 @@ export class PlayState implements GameState {
     private energyDisplay: HTMLDivElement;
     private isGameOver: boolean = false;
     private gameStateManager!: GameStateManager;
+    private backgroundTexture: THREE.CanvasTexture | null = null;
 
     constructor(
         private scene: THREE.Scene,
         private camera: THREE.PerspectiveCamera,
         private renderer: THREE.WebGLRenderer
     ) {
-        // Create gradient texture for background
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.width = 2;
-        canvas.height = 512;
-        if (context) {
-            const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#ff69b4');  // pink
-            gradient.addColorStop(1, '#00008b');  // dark blue
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.needsUpdate = true;
-        scene.background = texture;
-
         // Create bullet system
         this.bulletSystem = new BulletSystem(scene);
 
@@ -115,11 +99,31 @@ export class PlayState implements GameState {
         });
     }
 
+    private setupBackground(): void {
+        // Create gradient texture for background
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = 2;
+        canvas.height = 512;
+        if (context) {
+            const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#ff69b4');  // pink
+            gradient.addColorStop(1, '#00008b');  // dark blue
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        this.backgroundTexture = new THREE.CanvasTexture(canvas);
+        this.backgroundTexture.needsUpdate = true;
+        this.scene.background = this.backgroundTexture;
+    }
+
     public setGameStateManager(manager: GameStateManager): void {
         this.gameStateManager = manager;
     }
 
     public enter(): void {
+        this.setupBackground();
         this.resetGame();
     }
 
@@ -132,8 +136,13 @@ export class PlayState implements GameState {
         this.scene.remove(this.player.getGroup());
         this.enemySpawner.clearEnemies();
         this.bulletSystem.clearBullets();
+        this.bulletSystem.cleanup();
 
-        // Remove background
+        // Clean up background texture
+        if (this.backgroundTexture) {
+            this.backgroundTexture.dispose();
+            this.backgroundTexture = null;
+        }
         this.scene.background = null;
     }
 

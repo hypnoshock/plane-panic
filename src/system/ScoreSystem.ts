@@ -25,8 +25,9 @@ export class ScoreSystem {
         // Create hi-score display element
         this.hiScoreElement = document.createElement('div');
         this.hiScoreElement.style.position = 'absolute';
-        this.hiScoreElement.style.top = '60px';
-        this.hiScoreElement.style.right = '20px';
+        this.hiScoreElement.style.top = '20px';
+        this.hiScoreElement.style.left = '50%';
+        this.hiScoreElement.style.transform = 'translateX(-50%)';
         this.hiScoreElement.style.color = '#ffd700'; // Gold color for hi-score
         this.hiScoreElement.style.fontSize = '24px';
         this.hiScoreElement.style.fontFamily = 'Arial, sans-serif';
@@ -57,5 +58,10 @@ export class ScoreSystem {
 
     private updateDisplay(): void {
         this.scoreElement.textContent = `Score: ${this.score}`;
+    }
+
+    public cleanup(): void {
+        this.scoreElement.remove();
+        this.hiScoreElement.remove();
     }
 } 

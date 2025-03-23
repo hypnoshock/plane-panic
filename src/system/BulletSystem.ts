@@ -112,4 +112,8 @@ export class BulletSystem {
     public getScore(): number {
         return this.scoreSystem.getScore();
     }
+
+    public cleanup(): void {
+        this.scoreSystem.cleanup();
+    }
 } 
