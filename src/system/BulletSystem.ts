@@ -25,28 +25,17 @@ export class BulletSystem {
         this.audioSystem = audioSystem;
     }
 
-    public setEnemySpawner(spawner: EnemySpawner): void {
-        this.enemySpawner = spawner;
-    }
-
     public setPlayer(player: Player): void {
         this.player = player;
     }
 
-    public addEnemy(enemy: Enemy): void {
-        this.enemies.push(enemy);
+    public setEnemySpawner(enemySpawner: EnemySpawner): void {
+        this.enemySpawner = enemySpawner;
     }
 
-    public removeEnemy(enemy: Enemy): void {
-        const index = this.enemies.indexOf(enemy);
-        if (index > -1) {
-            this.enemies.splice(index, 1);
-        }
-    }
-
-    public spawnBullet(position: THREE.Vector3, isEnemy: boolean = false): void {
+    public spawnBullet(position: THREE.Vector3, direction: THREE.Vector3, isEnemy: boolean): void {
         const bulletModel = new BulletModel();
-        const bullet = new Bullet(bulletModel, isEnemy);
+        const bullet = new Bullet(bulletModel, direction, isEnemy);
         bullet.setPosition(position.x, position.y, position.z);
         this.scene.add(bullet.getGroup());
         this.bullets.push(bullet);
@@ -57,30 +46,15 @@ export class BulletSystem {
 
     public update(deltaTime: number): void {
         // Update all bullets
-        this.bullets.forEach(bullet => bullet.update(deltaTime));
-
-        if (!this.player) return;
-
-        // Check for collisions with player and enemies
-        const playerPosition = this.player.getPosition();
-        const collisionDistance = 1.0; // Adjust this value based on your game's scale
-
-        // Remove bullets that have gone too far or hit targets
         this.bullets = this.bullets.filter(bullet => {
+            bullet.update(deltaTime);
+            
             const position = bullet.getGroup().position;
-            const maxDistance = 20;
+            const maxDistance = 20; // Maximum distance bullets can travel
+            const collisionDistance = 1; // Distance at which collision is detected
 
-            // Check if bullet is an enemy bullet and has hit the player
-            if (bullet.isEnemyBullet()) {
-                const distanceToPlayer = position.distanceTo(playerPosition);
-                if (distanceToPlayer < collisionDistance) {
-                    this.player!.takeDamage();
-                    this.scene.remove(bullet.getGroup());
-                    return false;
-                }
-            } 
             // Check if bullet is a player bullet and has hit any enemy
-            else {
+            if (!bullet.isEnemyBullet()) {
                 for (const enemy of this.enemies) {
                     const enemyPosition = enemy.getPosition();
                     const distanceToEnemy = position.distanceTo(enemyPosition);
@@ -101,14 +75,35 @@ export class BulletSystem {
                     }
                 }
             }
+            // Check if bullet is an enemy bullet and has hit the player
+            else if (this.player) {
+                const playerPosition = this.player.getPosition();
+                const distanceToPlayer = position.distanceTo(playerPosition);
+                if (distanceToPlayer < collisionDistance) {
+                    this.scene.remove(bullet.getGroup());
+                    this.player.takeDamage();
+                    return false;
+                }
+            }
 
             // Remove bullets that have traveled too far
-            if (Math.abs(position.x) > maxDistance) {
+            if (position.length() > maxDistance) {
                 this.scene.remove(bullet.getGroup());
                 return false;
             }
             return true;
         });
+    }
+
+    public addEnemy(enemy: Enemy): void {
+        this.enemies.push(enemy);
+    }
+
+    public removeEnemy(enemy: Enemy): void {
+        const index = this.enemies.indexOf(enemy);
+        if (index > -1) {
+            this.enemies.splice(index, 1);
+        }
     }
 
     public clearBullets(): void {

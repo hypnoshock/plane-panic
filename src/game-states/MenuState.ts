@@ -4,6 +4,8 @@ import { GameStateManager } from './GameStateManager';
 import { PlayState } from './PlayState';
 import { KeyboardHandler } from '../system/KeyboardHandler';
 import { AudioSystem } from '../system/AudioSystem';
+import { EnemyShip } from '../game-models/EnemyShip';
+import { FastEnemyShipModel } from '../game-models/FastEnemyShipModel';
 
 export class MenuState implements GameState {
     private scene: THREE.Scene;
@@ -16,6 +18,8 @@ export class MenuState implements GameState {
     private keyboardHandler!: KeyboardHandler;
     private backgroundTexture: THREE.CanvasTexture | null = null;
     private audioSystem: AudioSystem;
+    private menuShips: THREE.Group[] = [];
+    private lastUpdateTime: number = 0;
 
     constructor(scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) {
         this.scene = scene;
@@ -24,6 +28,7 @@ export class MenuState implements GameState {
         this.audioSystem = new AudioSystem();
         this.setupMenu();
         this.setupKeyboardHandler();
+        this.setupMenuShips();
     }
 
     private setupBackground(): void {
@@ -80,6 +85,65 @@ export class MenuState implements GameState {
         });
     }
 
+    private setupMenuShips(): void {
+        // Create 3 regular enemy ships
+        for (let i = 0; i < 4; i++) {
+            const ship = new EnemyShip();
+            const group = ship.getGroup();
+            group.position.set(
+                (Math.random() * 20) - 10, // Random X between -10 and 10
+                (Math.random() * 10) - 5,  // Random Y between -5 and 5
+                -2 // Behind the menu
+            );
+            this.scene.add(group);
+            this.menuShips.push(group);
+        }
+
+        // Create 2 fast enemy ships
+        for (let i = 0; i < 2; i++) {
+            const ship = new FastEnemyShipModel();
+            const group = ship.getGroup();
+            group.position.set(
+                (Math.random() * 20) - 10,
+                (Math.random() * 10) - 5,
+                -2
+            );
+            this.scene.add(group);
+            this.menuShips.push(group);
+        }
+    }
+
+    private updateMenuShips(deltaTime: number): void {
+        this.menuShips.forEach((ship, index) => {
+            // Calculate current position
+            const time = Date.now() * 0.0005 + index;
+            const radius = 3 + (index % 2) * 2; // Different radius for each ship
+            const speed = 0.5 + (index % 2) * 0.3; // Different speed for each ship
+
+            const currentX = Math.cos(time * speed) * radius;
+            const currentY = Math.sin(time * speed) * radius;
+
+            // Calculate next position (for direction)
+            const nextTime = time + 0.1; // Small time step ahead
+            const nextX = Math.cos(nextTime * speed) * radius;
+            const nextY = Math.sin(nextTime * speed) * radius;
+
+            // Calculate angle between current and next position
+            const angle = Math.atan2(nextY - currentY, nextX - currentX);
+
+            // Update position
+            ship.position.x = currentX;
+            ship.position.y = currentY;
+
+            // Update rotation to point in direction of travel
+            // Add PI/2 because the ships are rotated 90 degrees by default
+            ship.rotation.y = angle + Math.PI / 2;
+
+            // Add a gentle rocking motion on top of the direction
+            // ship.rotation.z += Math.sin(Date.now() * 0.001 + index) * 0.05;
+        });
+    }
+
     private handleSelection(): void {
         switch (this.selectedOption) {
             case 0: // Start Game
@@ -127,6 +191,13 @@ export class MenuState implements GameState {
         this.menuContainer.remove();
         this.audioSystem.stopMenuMusic();
         this.audioSystem.cleanup();
+        
+        // Remove menu ships
+        this.menuShips.forEach(ship => {
+            this.scene.remove(ship);
+        });
+        this.menuShips = [];
+
         if (this.backgroundTexture) {
             this.backgroundTexture.dispose();
             this.backgroundTexture = null;
@@ -135,7 +206,12 @@ export class MenuState implements GameState {
     }
 
     update(): void {
+        const currentTime = Date.now();
+        const deltaTime = (currentTime - this.lastUpdateTime) / 1000; // Convert to seconds
+        this.lastUpdateTime = currentTime;
+
         this.keyboardHandler.update();
+        this.updateMenuShips(deltaTime);
     }
 
     render(): void {

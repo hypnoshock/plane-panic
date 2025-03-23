@@ -81,12 +81,12 @@ export class PlayState implements GameState {
         document.body.appendChild(this.energyDisplay);
 
         // Add lights
-        const light = new THREE.DirectionalLight(0xffffff, 1);
-        light.position.set(1, 1, 1);
-        scene.add(light);
+        // const light = new THREE.DirectionalLight(0xffffff, 1);
+        // light.position.set(1, 1, 1);
+        // scene.add(light);
 
-        const ambientLight = new THREE.AmbientLight(0x404040);
-        scene.add(ambientLight);
+        // const ambientLight = new THREE.AmbientLight(0x404040);
+        // scene.add(ambientLight);
 
         // Position camera
         camera.position.z = 5;

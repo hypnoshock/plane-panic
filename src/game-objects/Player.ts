@@ -90,7 +90,9 @@ export class Player {
                 playerPosition.y,
                 playerPosition.z
             );
-            this.bulletSystem.spawnBullet(bulletPosition);
+            // Shoot to the right
+            const direction = new THREE.Vector3(1, 0, 0);
+            this.bulletSystem.spawnBullet(bulletPosition, direction, false);
             this.lastSpacePress = currentTime;
         }
     }

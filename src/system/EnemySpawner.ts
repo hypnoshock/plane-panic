@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import { Enemy } from '../game-objects/Enemy';
 import { FastEnemy } from '../game-objects/FastEnemy';
+import { BigDumper } from '../game-objects/BigDumper';
 import { BulletSystem } from './BulletSystem';
 
 export class EnemySpawner {
-    private enemies: (Enemy | FastEnemy)[] = [];
+    private enemies: (Enemy | FastEnemy | BigDumper)[] = [];
     private scene: THREE.Scene;
     private bulletSystem: BulletSystem;
     private minSpawnInterval: number = 1000; // Minimum spawn interval in ms
@@ -49,16 +50,27 @@ export class EnemySpawner {
     private spawnEnemy(): void {
         // Random number between 0 and 1
         const random = Math.random();
+        let enemy;
         
-        // 30% chance for fast enemy, 70% for regular enemy
-        const enemy = random < 0.3 
-            ? new FastEnemy(this.bulletSystem)
-            : new Enemy(this.bulletSystem);
+        // 20% chance for fast enemy, 10% for big dumper, 70% for regular enemy
+        if (random < 0.2) {
+            enemy = new FastEnemy(this.bulletSystem);
+            // Position enemy off the right side of the screen
+            const randomY = (Math.random() * 8) - 4; // Random Y between -4 and 4
+            const initialPosition = new THREE.Vector3(10, randomY, 0);
+            enemy.setPosition(initialPosition);
+        } else if (random < 0.3) {
+            enemy = new BigDumper(this.bulletSystem);
+            const initialPosition = new THREE.Vector3(10, 3, 0);
+            enemy.setPosition(initialPosition);
+        } else {
+            enemy = new Enemy(this.bulletSystem);
+            // Position enemy off the right side of the screen
+            const randomY = (Math.random() * 8) - 4; // Random Y between -4 and 4
+            const initialPosition = new THREE.Vector3(10, randomY, 0);
+            enemy.setPosition(initialPosition);
+        }
         
-        // Position enemy off the right side of the screen
-        const randomY = (Math.random() * 8) - 4; // Random Y between -4 and 4
-        const initialPosition = new THREE.Vector3(10, randomY, 0);
-        enemy.setPosition(initialPosition);
         
         this.scene.add(enemy.getGroup());
         this.enemies.push(enemy);
@@ -73,7 +85,7 @@ export class EnemySpawner {
         this.enemies = [];
     }
 
-    public removeEnemy(enemy: Enemy | FastEnemy): void {
+    public removeEnemy(enemy: Enemy | FastEnemy | BigDumper): void {
         const index = this.enemies.indexOf(enemy);
         if (index > -1) {
             this.enemies.splice(index, 1);

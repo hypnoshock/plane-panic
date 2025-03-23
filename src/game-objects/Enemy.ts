@@ -7,9 +7,9 @@ export class Enemy {
     protected group!: THREE.Group;
     protected moveSpeed: number = 2; // Units per second
     private direction: number = 1; // 1 for moving up, -1 for moving down
-    private bulletSystem: BulletSystem;
-    private lastShotTime: number = 0;
-    private fireRate: number = 1000; // Shoot every second
+    protected bulletSystem: BulletSystem;
+    protected lastShotTime: number = 0;
+    protected fireRate: number = 1000; // Shoot every second
     protected initialPosition: THREE.Vector3;
 
     constructor(bulletSystem: BulletSystem, initialPosition?: THREE.Vector3) {
@@ -65,7 +65,9 @@ export class Enemy {
                 enemyPosition.y,
                 enemyPosition.z
             );
-            this.bulletSystem.spawnBullet(bulletPosition, true);
+            // Shoot to the left
+            const direction = new THREE.Vector3(-1, 0, 0);
+            this.bulletSystem.spawnBullet(bulletPosition, direction, true);
             this.lastShotTime = currentTime;
         }
     }
