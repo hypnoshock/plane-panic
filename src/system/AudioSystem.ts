@@ -5,6 +5,9 @@ export class AudioSystem {
     private musicOscillator: OscillatorNode | null = null;
     private musicGain: GainNode | null = null;
     private musicFilter: BiquadFilterNode | null = null;
+    private bassOscillator: OscillatorNode | null = null;
+    private bassGain: GainNode | null = null;
+    private bassFilter: BiquadFilterNode | null = null;
     private drumGainNode: GainNode;
     private isMusicPlaying: boolean = false;
 
@@ -100,18 +103,32 @@ export class AudioSystem {
         this.musicGain = this.audioContext.createGain();
         this.musicFilter = this.audioContext.createBiquadFilter();
 
-        // Configure filter
+        // Create bass oscillator
+        this.bassOscillator = this.audioContext.createOscillator();
+        this.bassGain = this.audioContext.createGain();
+        this.bassFilter = this.audioContext.createBiquadFilter();
+
+        // Configure filters
         this.musicFilter.type = 'lowpass';
         this.musicFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
         this.musicFilter.Q.setValueAtTime(1, this.audioContext.currentTime);
 
-        // Configure gain
+        this.bassFilter.type = 'lowpass';
+        this.bassFilter.frequency.setValueAtTime(500, this.audioContext.currentTime);
+        this.bassFilter.Q.setValueAtTime(1, this.audioContext.currentTime);
+
+        // Configure gains
         this.musicGain.gain.setValueAtTime(0.2, this.audioContext.currentTime);
+        this.bassGain.gain.setValueAtTime(0.15, this.audioContext.currentTime);
 
         // Connect nodes
         this.musicOscillator.connect(this.musicFilter);
         this.musicFilter.connect(this.musicGain);
         this.musicGain.connect(this.musicGainNode);
+
+        this.bassOscillator.connect(this.bassFilter);
+        this.bassFilter.connect(this.bassGain);
+        this.bassGain.connect(this.musicGainNode);
 
         // Define melody notes (in Hz)
         const melody = [
@@ -125,27 +142,36 @@ export class AudioSystem {
             246.94, 293.66, 349.23, 493.88   // B3, D4, F4, B4
         ];
 
+        // Create bass notes (one octave lower)
+        const bassNotes = melody.map(note => note / 2);
+
         // Create a repeating melody
         let time = this.audioContext.currentTime;
         const noteDuration = 0.25; // Duration of each note in seconds
-        const loopDuration = noteDuration * melody.length;
+        const bassNoteDuration = noteDuration * 2; // Bass notes are twice as long
 
         const playNote = (noteIndex: number) => {
             if (!this.isMusicPlaying) return;
 
             const frequency = melody[noteIndex];
+            const bassFrequency = bassNotes[noteIndex];
+
+            // Update melody
             this.musicOscillator!.frequency.setValueAtTime(frequency, time);
-            
-            // Add slight filter modulation for interest
             this.musicFilter!.frequency.setValueAtTime(2000, time);
             this.musicFilter!.frequency.exponentialRampToValueAtTime(1000, time + noteDuration);
 
+            // Update bass (only on even indices since it's half speed)
+            if (noteIndex % 2 === 0) {
+                this.bassOscillator!.frequency.setValueAtTime(bassFrequency, time);
+                this.bassFilter!.frequency.setValueAtTime(500, time);
+                this.bassFilter!.frequency.exponentialRampToValueAtTime(200, time + bassNoteDuration);
+            }
+
             // Play drums
-            // Kick on every first and third beat
             if (noteIndex % 4 === 0 || noteIndex % 4 === 2) {
                 this.playKick(time);
             }
-            // Hi-hat on every beat
             this.playHiHat(time);
 
             // Schedule next note
@@ -158,8 +184,9 @@ export class AudioSystem {
             }
         };
 
-        // Start the melody
+        // Start both oscillators
         this.musicOscillator.start(time);
+        this.bassOscillator.start(time);
         playNote(0);
     }
 
@@ -179,6 +206,19 @@ export class AudioSystem {
         if (this.musicFilter) {
             this.musicFilter.disconnect();
             this.musicFilter = null;
+        }
+        if (this.bassOscillator) {
+            this.bassOscillator.stop(this.audioContext.currentTime);
+            this.bassOscillator.disconnect();
+            this.bassOscillator = null;
+        }
+        if (this.bassGain) {
+            this.bassGain.disconnect();
+            this.bassGain = null;
+        }
+        if (this.bassFilter) {
+            this.bassFilter.disconnect();
+            this.bassFilter = null;
         }
     }
 
