@@ -1,16 +1,16 @@
 import * as THREE from 'three';
 import { Enemy } from '../game-objects/Enemy';
+import { FastEnemy } from '../game-objects/FastEnemy';
 import { BulletSystem } from './BulletSystem';
 
 export class EnemySpawner {
-    private enemies: Enemy[] = [];
+    private enemies: (Enemy | FastEnemy)[] = [];
     private scene: THREE.Scene;
     private bulletSystem: BulletSystem;
     private minSpawnInterval: number = 1000; // Minimum spawn interval in ms
     private maxSpawnInterval: number = 3000; // Maximum spawn interval in ms
     private spawnInterval: number = 2000; // Current spawn interval
     private lastSpawnTime: number = 0;
-    private moveSpeed: number = 0.05;
 
     constructor(scene: THREE.Scene, bulletSystem: BulletSystem) {
         this.scene = scene;
@@ -47,7 +47,13 @@ export class EnemySpawner {
     }
 
     private spawnEnemy(): void {
-        const enemy = new Enemy(this.bulletSystem);
+        // Random number between 0 and 1
+        const random = Math.random();
+        
+        // 30% chance for fast enemy, 70% for regular enemy
+        const enemy = random < 0.3 
+            ? new FastEnemy(this.bulletSystem)
+            : new Enemy(this.bulletSystem);
         
         // Position enemy off the right side of the screen
         const randomY = (Math.random() * 8) - 4; // Random Y between -4 and 4
@@ -67,7 +73,7 @@ export class EnemySpawner {
         this.enemies = [];
     }
 
-    public removeEnemy(enemy: Enemy): void {
+    public removeEnemy(enemy: Enemy | FastEnemy): void {
         const index = this.enemies.indexOf(enemy);
         if (index > -1) {
             this.enemies.splice(index, 1);

@@ -3,18 +3,23 @@ import { EnemyShip } from '../game-models/EnemyShip';
 import { BulletSystem } from '../system/BulletSystem';
 
 export class Enemy {
-    private model: EnemyShip;
-    private group: THREE.Group;
-    private moveSpeed: number = 2; // Units per second
+    public model!: EnemyShip;
+    protected group!: THREE.Group;
+    protected moveSpeed: number = 2; // Units per second
     private direction: number = 1; // 1 for moving up, -1 for moving down
     private bulletSystem: BulletSystem;
     private lastShotTime: number = 0;
     private fireRate: number = 1000; // Shoot every second
-    private initialPosition: THREE.Vector3;
+    protected initialPosition: THREE.Vector3;
 
     constructor(bulletSystem: BulletSystem, initialPosition?: THREE.Vector3) {
-        this.model = new EnemyShip();
         this.bulletSystem = bulletSystem;
+        this.initialPosition = initialPosition || new THREE.Vector3(0, 2, 0);
+        this.init();
+    }
+
+    protected init(): void {
+        this.model = new EnemyShip();
         this.group = new THREE.Group();
         this.group.add(this.model.getGroup());
         
@@ -22,7 +27,6 @@ export class Enemy {
         this.group.rotation.y = Math.PI;
 
         // Set initial position
-        this.initialPosition = initialPosition || new THREE.Vector3(0, 2, 0);
         this.group.position.copy(this.initialPosition);
     }
 
@@ -51,7 +55,7 @@ export class Enemy {
         this.direction = 1; // Reset direction to moving up
     }
 
-    private tryShoot(): void {
+    protected tryShoot(): void {
         const currentTime = Date.now();
         if (currentTime - this.lastShotTime >= this.fireRate) {
             const enemyPosition = this.group.position;

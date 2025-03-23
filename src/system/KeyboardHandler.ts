@@ -1,5 +1,3 @@
-import { Player } from '../game-objects/Player';
-
 type KeyboardEventHandler = (event: string, isPress: boolean) => void;
 
 export class KeyboardHandler {
