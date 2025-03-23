@@ -63,8 +63,9 @@ export class MenuState implements GameState {
         this.menuContainer.style.textAlign = 'center';
         this.menuContainer.style.color = 'white';
         this.menuContainer.style.fontFamily = 'Arial, sans-serif';
-        this.menuContainer.style.fontSize = 'min(6vh, 32px)'; // Responsive font size
+        this.menuContainer.style.fontSize = 'min(6vh, 32px)';
         this.menuContainer.style.zIndex = '1000';
+        this.menuContainer.style.touchAction = 'none'; // Prevent default touch actions
         document.body.appendChild(this.menuContainer);
     }
 
@@ -208,19 +209,47 @@ export class MenuState implements GameState {
                 .menu-item {
                     margin: min(2vh, 20px);
                     cursor: pointer;
+                    padding: min(1vh, 10px);
+                    transition: color 0.2s ease;
+                }
+                .menu-item:hover {
+                    color: #ff6666;
                 }
             </style>
             <div class="title">Plane Panic</div>
             ${this.options.map((option, index) => 
-                `<div class="menu-item" style="${index === this.selectedOption ? 'color: #ff0000;' : ''}">${option}</div>`
+                `<div class="menu-item" 
+                    style="${index === this.selectedOption ? 'color: #ff0000;' : ''}"
+                    onclick="window.dispatchEvent(new CustomEvent('menuSelect', { detail: ${index} }))"
+                    ontouchstart="this.style.color='#ff6666'"
+                    ontouchend="this.style.color='${index === this.selectedOption ? '#ff0000' : 'white'}'">
+                    ${option}
+                </div>`
             ).join('')}
         `;
+
+        // Add event listener for menu selection
+        const handleMenuSelect = (event: CustomEvent) => {
+            this.selectedOption = event.detail;
+            this.handleSelection();
+        };
+
+        window.addEventListener('menuSelect', handleMenuSelect as EventListener);
+        
+        // Clean up the event listener when the menu is updated again
+        const cleanup = () => {
+            window.removeEventListener('menuSelect', handleMenuSelect as EventListener);
+        };
+        
+        // Store cleanup function to be called when menu is updated again
+        (this.menuContainer as any)._cleanup = cleanup;
     }
 
     enter(): void {
         this.setupBackground();
         this.updateMenuDisplay();
         this.audioSystem.playMenuMusic();
+        this.screenControlHandler.hideControls();
     }
 
     exit(): void {

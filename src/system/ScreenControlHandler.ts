@@ -13,19 +13,10 @@ export class ScreenControlHandler {
         this.eventHandler = eventHandler;
         this.createControls();
         this.setupEventListeners();
-        
-        // Hide controls by default on non-mobile devices
-        if (!this.isMobileDevice()) {
-            this.hideControls();
-        }
     }
 
     public setEventHandler(eventHandler: ScreenControlEventHandler): void {
         this.eventHandler = eventHandler;
-    }
-
-    private isMobileDevice(): boolean {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }
 
     public showControls(): void {

@@ -160,10 +160,21 @@ export class PlayState implements GameState {
         this.gameStateManager = manager;
     }
 
+    private isMobileDevice(): boolean {
+        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    }
+
     public enter(): void {
         this.setupBackground();
         this.resetGame();
         this.audioSystem.playMusic();
+        
+        // Show controls only on mobile devices
+        if (this.isMobileDevice()) {
+            this.screenControlHandler.showControls();
+        } else {
+            this.screenControlHandler.hideControls();
+        }
     }
 
     public exit(): void {
