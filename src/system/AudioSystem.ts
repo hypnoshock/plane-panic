@@ -5,14 +5,90 @@ export class AudioSystem {
     private musicOscillator: OscillatorNode | null = null;
     private musicGain: GainNode | null = null;
     private musicFilter: BiquadFilterNode | null = null;
+    private drumGainNode: GainNode;
     private isMusicPlaying: boolean = false;
 
     constructor() {
         this.audioContext = new AudioContext();
         this.masterGainNode = this.audioContext.createGain();
         this.musicGainNode = this.audioContext.createGain();
+        this.drumGainNode = this.audioContext.createGain();
         this.masterGainNode.connect(this.audioContext.destination);
         this.musicGainNode.connect(this.masterGainNode);
+        this.drumGainNode.connect(this.masterGainNode);
+    }
+
+    private playKick(time: number): void {
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
+
+        // Configure kick drum sound
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(150, time);
+        oscillator.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(200, time);
+        filter.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
+
+        gainNode.gain.setValueAtTime(0.3, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+
+        // Connect nodes
+        oscillator.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(this.drumGainNode);
+
+        // Start and stop
+        oscillator.start(time);
+        oscillator.stop(time + 0.5);
+
+        // Cleanup
+        oscillator.onended = () => {
+            oscillator.disconnect();
+            filter.disconnect();
+            gainNode.disconnect();
+        };
+    }
+
+    private playHiHat(time: number): void {
+        const noise = this.audioContext.createBufferSource();
+        const gainNode = this.audioContext.createGain();
+        const filter = this.audioContext.createBiquadFilter();
+
+        // Generate white noise
+        const bufferSize = this.audioContext.sampleRate * 0.1;
+        const buffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+        noise.buffer = buffer;
+
+        // Configure hi-hat sound
+        filter.type = 'highpass';
+        filter.frequency.setValueAtTime(7000, time);
+        filter.frequency.exponentialRampToValueAtTime(2000, time + 0.1);
+
+        gainNode.gain.setValueAtTime(0.1, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+
+        // Connect nodes
+        noise.connect(filter);
+        filter.connect(gainNode);
+        gainNode.connect(this.drumGainNode);
+
+        // Start and stop
+        noise.start(time);
+        noise.stop(time + 0.1);
+
+        // Cleanup
+        noise.onended = () => {
+            noise.disconnect();
+            filter.disconnect();
+            gainNode.disconnect();
+        };
     }
 
     public playMusic(): void {
@@ -51,7 +127,7 @@ export class AudioSystem {
 
         // Create a repeating melody
         let time = this.audioContext.currentTime;
-        const noteDuration = 0.25; // Duration of each note in seconds (halved from 0.5)
+        const noteDuration = 0.25; // Duration of each note in seconds
         const loopDuration = noteDuration * melody.length;
 
         const playNote = (noteIndex: number) => {
@@ -63,6 +139,14 @@ export class AudioSystem {
             // Add slight filter modulation for interest
             this.musicFilter!.frequency.setValueAtTime(2000, time);
             this.musicFilter!.frequency.exponentialRampToValueAtTime(1000, time + noteDuration);
+
+            // Play drums
+            // Kick on every first and third beat
+            if (noteIndex % 4 === 0 || noteIndex % 4 === 2) {
+                this.playKick(time);
+            }
+            // Hi-hat on every beat
+            this.playHiHat(time);
 
             // Schedule next note
             time += noteDuration;
