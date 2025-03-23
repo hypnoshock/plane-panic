@@ -10,6 +10,10 @@ export class AudioSystem {
     private bassFilter: BiquadFilterNode | null = null;
     private drumGainNode: GainNode;
     private isMusicPlaying: boolean = false;
+    private menuOscillator: OscillatorNode | null = null;
+    private menuGain: GainNode | null = null;
+    private menuFilter: BiquadFilterNode | null = null;
+    private isMenuMusicPlaying: boolean = false;
 
     constructor() {
         this.audioContext = new AudioContext();
@@ -254,7 +258,7 @@ export class AudioSystem {
 
     public playExplosion(): void {
         const now = this.audioContext.currentTime;
-        const duration = 0.5; // Duration of the explosion sound
+        const duration = 1.5; // Duration of the explosion sound
 
         // Create noise generator
         const noise = this.audioContext.createBufferSource();
@@ -270,25 +274,51 @@ export class AudioSystem {
         }
         noise.buffer = buffer;
 
-        // Configure noise filter
+        // Configure noise filter - lower frequency range
         noiseFilter.type = 'bandpass';
-        noiseFilter.frequency.setValueAtTime(1000, now);
-        noiseFilter.frequency.exponentialRampToValueAtTime(100, now + duration);
+        noiseFilter.frequency.setValueAtTime(400, now);  // Lower starting frequency
+        noiseFilter.frequency.exponentialRampToValueAtTime(50, now + duration);  // Lower ending frequency
         noiseFilter.Q.setValueAtTime(1, now);
 
-        // Configure noise envelope
+        // Configure noise envelope - slightly longer attack
         noiseGain.gain.setValueAtTime(0, now);
-        noiseGain.gain.linearRampToValueAtTime(0.5, now + 0.01);
+        noiseGain.gain.linearRampToValueAtTime(0.4, now + 0.02);  // Slightly longer attack
         noiseGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
 
-        // Create low frequency oscillator for rumble
+        // Create low frequency oscillator for rumble - more prominent
         const lfo = this.audioContext.createOscillator();
         const lfoGain = this.audioContext.createGain();
         lfo.type = 'sine';
-        lfo.frequency.setValueAtTime(20, now);
-        lfo.frequency.exponentialRampToValueAtTime(5, now + duration);
-        lfoGain.gain.setValueAtTime(0.3, now);
+        lfo.frequency.setValueAtTime(20, now);  // Higher starting frequency
+        lfo.frequency.exponentialRampToValueAtTime(10, now + duration);  // Higher ending frequency
+        lfoGain.gain.setValueAtTime(0.5, now);  // Increased volume
         lfoGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+        // Add a second low frequency oscillator for more bass content
+        const lfo2 = this.audioContext.createOscillator();
+        const lfo2Gain = this.audioContext.createGain();
+        lfo2.type = 'sine';
+        lfo2.frequency.setValueAtTime(20, now);
+        lfo2.frequency.exponentialRampToValueAtTime(5, now + duration);
+        lfo2Gain.gain.setValueAtTime(0.3, now);
+        lfo2Gain.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+        // Add a frequency sweep oscillator for the main explosion sound
+        const sweepOsc = this.audioContext.createOscillator();
+        const sweepGain = this.audioContext.createGain();
+        const sweepFilter = this.audioContext.createBiquadFilter();
+        
+        sweepOsc.type = 'sine';
+        sweepOsc.frequency.setValueAtTime(200, now);  // Start at mid frequency
+        sweepOsc.frequency.exponentialRampToValueAtTime(30, now + duration);  // Sweep down to low frequency
+        
+        sweepFilter.type = 'lowpass';
+        sweepFilter.frequency.setValueAtTime(1000, now);
+        sweepFilter.frequency.exponentialRampToValueAtTime(100, now + duration);
+        
+        sweepGain.gain.setValueAtTime(0, now);
+        sweepGain.gain.linearRampToValueAtTime(0.6, now + 0.01);  // Quick attack
+        sweepGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
 
         // Connect nodes
         noise.connect(noiseFilter);
@@ -296,12 +326,21 @@ export class AudioSystem {
         noiseGain.connect(this.masterGainNode);
         lfo.connect(lfoGain);
         lfoGain.connect(this.masterGainNode);
+        lfo2.connect(lfo2Gain);
+        lfo2Gain.connect(this.masterGainNode);
+        sweepOsc.connect(sweepFilter);
+        sweepFilter.connect(sweepGain);
+        sweepGain.connect(this.masterGainNode);
 
         // Start and stop sounds
         noise.start(now);
         noise.stop(now + duration);
         lfo.start(now);
         lfo.stop(now + duration);
+        lfo2.start(now);
+        lfo2.stop(now + duration);
+        sweepOsc.start(now);
+        sweepOsc.stop(now + duration);
 
         // Clean up nodes after they're done
         noise.onended = () => {
@@ -313,10 +352,108 @@ export class AudioSystem {
             lfo.disconnect();
             lfoGain.disconnect();
         };
+        lfo2.onended = () => {
+            lfo2.disconnect();
+            lfo2Gain.disconnect();
+        };
+        sweepOsc.onended = () => {
+            sweepOsc.disconnect();
+            sweepFilter.disconnect();
+            sweepGain.disconnect();
+        };
+    }
+
+    public playMenuMusic(): void {
+        if (this.isMenuMusicPlaying) return;
+        this.isMenuMusicPlaying = true;
+
+        // Create main oscillator for menu melody
+        this.menuOscillator = this.audioContext.createOscillator();
+        this.menuGain = this.audioContext.createGain();
+        this.menuFilter = this.audioContext.createBiquadFilter();
+
+        // Configure filter for a gentle, ambient sound
+        this.menuFilter.type = 'lowpass';
+        this.menuFilter.frequency.setValueAtTime(2000, this.audioContext.currentTime);
+        this.menuFilter.Q.setValueAtTime(1, this.audioContext.currentTime);
+
+        // Configure gain for a softer sound
+        this.menuGain.gain.setValueAtTime(0.15, this.audioContext.currentTime);
+
+        // Connect nodes
+        this.menuOscillator.connect(this.menuFilter);
+        this.menuFilter.connect(this.menuGain);
+        this.menuGain.connect(this.masterGainNode);
+
+        // Define menu melody notes (in Hz) - gentle, ambient progression, one octave lower
+        const melody = [
+            196, 220, 246.94, 293.66,  // G3, A3, B3, D4
+            196, 220, 246.94, 293.66,  // G3, A3, B3, D4
+            220, 246.94, 293.66, 349.23,  // A3, B3, D4, F4
+            220, 246.94, 293.66, 349.23,  // A3, B3, D4, F4
+            196, 220, 246.94, 293.66,  // G3, A3, B3, D4
+            196, 220, 246.94, 293.66,  // G3, A3, B3, D4
+            220, 246.94, 293.66, 349.23,  // A3, B3, D4, F4
+            220, 246.94, 293.66, 349.23   // A3, B3, D4, F4
+        ];
+
+        // Create a repeating melody
+        let time = this.audioContext.currentTime;
+        const noteDuration = 1.0; // Slower, more ambient pace
+
+        const playNote = (noteIndex: number) => {
+            if (!this.isMenuMusicPlaying) return;
+
+            const frequency = melody[noteIndex];
+            this.menuOscillator!.frequency.setValueAtTime(frequency, time);
+            
+            // Add gentle filter modulation
+            this.menuFilter!.frequency.setValueAtTime(2000, time);
+            this.menuFilter!.frequency.exponentialRampToValueAtTime(1500, time + noteDuration);
+
+            // Play drums - kick on every other note, hi-hat on every note
+            if (noteIndex % 2 === 0) {
+                this.playKick(time);
+            }
+            this.playHiHat(time);
+
+            // Schedule next note
+            time += noteDuration;
+            if (noteIndex < melody.length - 1) {
+                setTimeout(() => playNote(noteIndex + 1), noteDuration * 1000);
+            } else {
+                // Loop back to start
+                setTimeout(() => playNote(0), noteDuration * 1000);
+            }
+        };
+
+        // Start the melody
+        this.menuOscillator.start(time);
+        playNote(0);
+    }
+
+    public stopMenuMusic(): void {
+        if (!this.isMenuMusicPlaying) return;
+        this.isMenuMusicPlaying = false;
+
+        if (this.menuOscillator) {
+            this.menuOscillator.stop(this.audioContext.currentTime);
+            this.menuOscillator.disconnect();
+            this.menuOscillator = null;
+        }
+        if (this.menuGain) {
+            this.menuGain.disconnect();
+            this.menuGain = null;
+        }
+        if (this.menuFilter) {
+            this.menuFilter.disconnect();
+            this.menuFilter = null;
+        }
     }
 
     public cleanup(): void {
         this.stopMusic();
+        this.stopMenuMusic();
         this.audioContext.close();
     }
 } 

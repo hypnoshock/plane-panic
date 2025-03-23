@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { GameStateManager } from './GameStateManager';
 import { PlayState } from './PlayState';
 import { KeyboardHandler } from '../system/KeyboardHandler';
+import { AudioSystem } from '../system/AudioSystem';
 
 export class MenuState implements GameState {
     private scene: THREE.Scene;
@@ -14,11 +15,13 @@ export class MenuState implements GameState {
     private options: string[] = ['Start Game', 'High Scores'];
     private keyboardHandler!: KeyboardHandler;
     private backgroundTexture: THREE.CanvasTexture | null = null;
+    private audioSystem: AudioSystem;
 
     constructor(scene: THREE.Scene, camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer) {
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
+        this.audioSystem = new AudioSystem();
         this.setupMenu();
         this.setupKeyboardHandler();
     }
@@ -99,10 +102,13 @@ export class MenuState implements GameState {
     enter(): void {
         this.setupBackground();
         this.updateMenuDisplay();
+        this.audioSystem.playMenuMusic();
     }
 
     exit(): void {
         this.menuContainer.remove();
+        this.audioSystem.stopMenuMusic();
+        this.audioSystem.cleanup();
         if (this.backgroundTexture) {
             this.backgroundTexture.dispose();
             this.backgroundTexture = null;
