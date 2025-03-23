@@ -16,7 +16,7 @@ export class MenuState implements GameState {
     private gameStateManager!: GameStateManager;
     private menuContainer!: HTMLDivElement;
     private selectedOption: number = 0;
-    private options: string[] = ['Start Game', 'High Scores'];
+    private options: string[] = ['Start Game', 'High Scores', 'Toggle Fullscreen'];
     private keyboardHandler!: KeyboardHandler;
     private screenControlHandler!: ScreenControlHandler;
     private joypadHandler!: JoypadInputHandler;
@@ -173,6 +173,19 @@ export class MenuState implements GameState {
             case 1: // High Scores
                 // To be implemented later
                 break;
+            case 2: // Toggle Fullscreen
+                this.toggleFullscreen();
+                break;
+        }
+    }
+
+    private toggleFullscreen(): void {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.log(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
         }
     }
 
