@@ -18,8 +18,8 @@ export class MenuState implements GameState {
     private selectedOption: number = 0;
     private options: string[] = ['Start Game', 'High Scores'];
     private keyboardHandler!: KeyboardHandler;
-    private screenControlHandler?: ScreenControlHandler;
-    private joypadHandler?: JoypadInputHandler;
+    private screenControlHandler!: ScreenControlHandler;
+    private joypadHandler!: JoypadInputHandler;
     private backgroundTexture: THREE.CanvasTexture | null = null;
     private audioSystem: AudioSystem;
     private menuShips: THREE.Group[] = [];
@@ -31,7 +31,6 @@ export class MenuState implements GameState {
         this.renderer = renderer;
         this.audioSystem = new AudioSystem();
         this.setupMenu();
-        this.setupInputHandlers();
         this.setupMenuShips();
     }
 
@@ -89,9 +88,20 @@ export class MenuState implements GameState {
             this.updateMenuDisplay();
         }
 
-        this.keyboardHandler = new KeyboardHandler(inputHandler);
-        this.screenControlHandler = new ScreenControlHandler(inputHandler);
-        this.joypadHandler = new JoypadInputHandler(inputHandler);
+        this.keyboardHandler.setEventHandler(inputHandler);
+        this.screenControlHandler.setEventHandler(inputHandler);
+        this.joypadHandler.setEventHandler(inputHandler);
+    }
+
+    public setInputHandlers(
+        keyboardHandler: KeyboardHandler,
+        screenControlHandler: ScreenControlHandler,
+        joypadHandler: JoypadInputHandler
+    ): void {
+        this.keyboardHandler = keyboardHandler;
+        this.screenControlHandler = screenControlHandler;
+        this.joypadHandler = joypadHandler;
+        this.setupInputHandlers();
     }
 
     private setupMenuShips(): void {
@@ -212,10 +222,6 @@ export class MenuState implements GameState {
             this.backgroundTexture = null;
         }
         this.scene.background = null;
-
-        this.screenControlHandler?.destroy();
-        this.keyboardHandler.destroy();
-        this.joypadHandler?.destroy();
     }
 
     update(): void {
@@ -224,8 +230,8 @@ export class MenuState implements GameState {
         this.lastUpdateTime = currentTime;
 
         this.keyboardHandler.update();
-        this.screenControlHandler?.update();
-        this.joypadHandler?.update();
+        this.screenControlHandler.update();
+        this.joypadHandler.update();
         this.updateMenuShips(deltaTime);
     }
 

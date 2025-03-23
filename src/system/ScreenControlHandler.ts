@@ -20,6 +20,10 @@ export class ScreenControlHandler {
         }
     }
 
+    public setEventHandler(eventHandler: ScreenControlEventHandler): void {
+        this.eventHandler = eventHandler;
+    }
+
     private isMobileDevice(): boolean {
         return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     }

@@ -85,31 +85,27 @@ export class PlayState implements GameState {
         this.energyDisplay.textContent = 'Energy: 3';
         document.body.appendChild(this.energyDisplay);
 
-        // Add lights
-        // const light = new THREE.DirectionalLight(0xffffff, 1);
-        // light.position.set(1, 1, 1);
-        // scene.add(light);
-
-        // const ambientLight = new THREE.AmbientLight(0x404040);
-        // scene.add(ambientLight);
-
         // Position camera
         camera.position.z = 5;
+    }
 
-        // Create keyboard handler with event handler
-        this.keyboardHandler = new KeyboardHandler((event: string, isPress: boolean) => {
-            this.handleInput(event, isPress);
-        });
+    public setInputHandlers(
+        keyboardHandler: KeyboardHandler,
+        screenControlHandler: ScreenControlHandler,
+        joypadHandler: JoypadInputHandler
+    ): void {
+        this.keyboardHandler = keyboardHandler;
+        this.screenControlHandler = screenControlHandler;
+        this.joypadHandler = joypadHandler;
 
-        // Create screen control handler with event handler
-        this.screenControlHandler = new ScreenControlHandler((event: string, isPress: boolean) => {
+        // Set up event handlers
+        const inputHandler = (event: string, isPress: boolean) => {
             this.handleInput(event, isPress);
-        });
+        };
 
-        // Create joypad handler with event handler
-        this.joypadHandler = new JoypadInputHandler((event: string, isPress: boolean) => {
-            this.handleInput(event, isPress);
-        });
+        this.keyboardHandler.setEventHandler(inputHandler);
+        this.screenControlHandler.setEventHandler(inputHandler);
+        this.joypadHandler.setEventHandler(inputHandler);
     }
 
     private handleInput(event: string, isPress: boolean): void {
@@ -186,11 +182,6 @@ export class PlayState implements GameState {
         this.bulletSystem.clearBullets();
         this.bulletSystem.cleanup();
         this.audioSystem.cleanup();
-
-        // Clean up input handlers
-        this.screenControlHandler.destroy();
-        this.keyboardHandler.destroy();
-        this.joypadHandler.destroy();
 
         // Clean up background texture
         if (this.backgroundTexture) {

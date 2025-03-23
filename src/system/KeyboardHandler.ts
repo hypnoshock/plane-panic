@@ -13,6 +13,10 @@ export class KeyboardHandler {
         this.setupEventListeners();
     }
 
+    public setEventHandler(eventHandler: KeyboardEventHandler): void {
+        this.eventHandler = eventHandler;
+    }
+
     private setupEventListeners(): void {
         window.addEventListener('keydown', this.keydownListener);
         window.addEventListener('keyup', this.keyupListener);

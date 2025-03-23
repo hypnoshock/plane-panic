@@ -32,6 +32,10 @@ export class JoypadInputHandler {
         }
     }
 
+    public setEventHandler(eventHandler: JoypadEventHandler): void {
+        this.eventHandler = eventHandler;
+    }
+
     private setupEventListeners(): void {
         window.addEventListener('gamepadconnected', this.connectedListener);
         window.addEventListener('gamepaddisconnected', this.disconnectedListener);
