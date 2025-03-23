@@ -3,6 +3,7 @@ import { GameState } from './GameState';
 import { Spaceship } from '../game-models/Spaceship';
 import { Player } from '../game-objects/Player';
 import { KeyboardHandler } from '../system/KeyboardHandler';
+import { ScreenControlHandler } from '../system/ScreenControlHandler';
 import { BulletSystem } from '../system/BulletSystem';
 import { EnemySpawner } from '../system/EnemySpawner';
 import { GameStateManager } from './GameStateManager';
@@ -16,6 +17,7 @@ export class PlayState implements GameState {
     private player: Player;
     private enemySpawner: EnemySpawner;
     private keyboardHandler!: KeyboardHandler;
+    private screenControlHandler!: ScreenControlHandler;
     private gameOverScreen: HTMLDivElement;
     private energyDisplay: HTMLDivElement;
     private isGameOver: boolean = false;
@@ -94,33 +96,42 @@ export class PlayState implements GameState {
 
         // Create keyboard handler with event handler
         this.keyboardHandler = new KeyboardHandler((event: string, isPress: boolean) => {
-            if (this.isGameOver) {
-                if (event === 'button2' && isPress) {
-                    const menuState = new MenuState(this.scene, this.camera, this.renderer);
-                    menuState.setGameStateManager(this.gameStateManager);
-                    this.gameStateManager.setState(menuState);
-                }
-                return;
-            }
-
-            switch (event) {
-                case 'up':
-                    this.inputFlags.moveUp = isPress;
-                    break;
-                case 'down':
-                    this.inputFlags.moveDown = isPress;
-                    break;
-                case 'left':
-                    this.inputFlags.moveLeft = isPress;
-                    break;
-                case 'right':
-                    this.inputFlags.moveRight = isPress;
-                    break;
-                case 'button1':
-                    this.inputFlags.shoot = isPress;
-                    break;
-            }
+            this.handleInput(event, isPress);
         });
+
+        // Create screen control handler with event handler
+        this.screenControlHandler = new ScreenControlHandler((event: string, isPress: boolean) => {
+            this.handleInput(event, isPress);
+        });
+    }
+
+    private handleInput(event: string, isPress: boolean): void {
+        if (this.isGameOver) {
+            if (event === 'button2' && isPress) {
+                const menuState = new MenuState(this.scene, this.camera, this.renderer);
+                menuState.setGameStateManager(this.gameStateManager);
+                this.gameStateManager.setState(menuState);
+            }
+            return;
+        }
+
+        switch (event) {
+            case 'up':
+                this.inputFlags.moveUp = isPress;
+                break;
+            case 'down':
+                this.inputFlags.moveDown = isPress;
+                break;
+            case 'left':
+                this.inputFlags.moveLeft = isPress;
+                break;
+            case 'right':
+                this.inputFlags.moveRight = isPress;
+                break;
+            case 'button1':
+                this.inputFlags.shoot = isPress;
+                break;
+        }
     }
 
     private setupBackground(): void {
@@ -169,6 +180,9 @@ export class PlayState implements GameState {
         this.bulletSystem.cleanup();
         this.audioSystem.cleanup();
 
+        // Clean up input handlers
+        this.screenControlHandler.destroy();
+
         // Clean up background texture
         if (this.backgroundTexture) {
             this.backgroundTexture.dispose();
@@ -199,6 +213,7 @@ export class PlayState implements GameState {
 
         this.player.update(deltaTime);
         this.keyboardHandler.update();
+        this.screenControlHandler.update();
         this.bulletSystem.update(deltaTime);
         this.enemySpawner.update(deltaTime);
         this.cloudBackground.update(deltaTime);

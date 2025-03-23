@@ -21,12 +21,6 @@ scene.add(ambientLight);
 // Position camera
 camera.position.z = 5;
 
-// Create game over screen
-const gameOverScreen = document.createElement('div');
-gameOverScreen.className = 'game-over';
-gameOverScreen.innerHTML = 'GAME OVER<br/>Press RETURN to restart';
-document.body.appendChild(gameOverScreen);
-
 // Create FPS counter
 const fpsCounter = document.createElement('div');
 fpsCounter.style.position = 'absolute';

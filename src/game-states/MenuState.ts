@@ -6,6 +6,7 @@ import { KeyboardHandler } from '../system/KeyboardHandler';
 import { AudioSystem } from '../system/AudioSystem';
 import { EnemyShip } from '../game-models/EnemyShip';
 import { FastEnemyShipModel } from '../game-models/FastEnemyShipModel';
+import { ScreenControlHandler } from '../system/ScreenControlHandler';
 
 export class MenuState implements GameState {
     private scene: THREE.Scene;
@@ -16,6 +17,7 @@ export class MenuState implements GameState {
     private selectedOption: number = 0;
     private options: string[] = ['Start Game', 'High Scores'];
     private keyboardHandler!: KeyboardHandler;
+    private screenControlHandler?: ScreenControlHandler;
     private backgroundTexture: THREE.CanvasTexture | null = null;
     private audioSystem: AudioSystem;
     private menuShips: THREE.Group[] = [];
@@ -27,7 +29,7 @@ export class MenuState implements GameState {
         this.renderer = renderer;
         this.audioSystem = new AudioSystem();
         this.setupMenu();
-        this.setupKeyboardHandler();
+        this.setupInputHandlers();
         this.setupMenuShips();
     }
 
@@ -65,8 +67,8 @@ export class MenuState implements GameState {
         document.body.appendChild(this.menuContainer);
     }
 
-    private setupKeyboardHandler(): void {
-        this.keyboardHandler = new KeyboardHandler((event: string, isPress: boolean) => {
+    private setupInputHandlers(): void {
+        const inputHandler = (event: string, isPress: boolean) => {
             // Only handle press events for the menu
             if (!isPress) return;
 
@@ -77,12 +79,16 @@ export class MenuState implements GameState {
                 case 'down':
                     this.selectedOption = (this.selectedOption + 1) % this.options.length;
                     break;
+                case 'button1':
                 case 'button2':
                     this.handleSelection();
                     break;
             }
             this.updateMenuDisplay();
-        });
+        }
+
+        this.keyboardHandler = new KeyboardHandler(inputHandler);
+        this.screenControlHandler = new ScreenControlHandler(inputHandler);
     }
 
     private setupMenuShips(): void {
@@ -203,6 +209,8 @@ export class MenuState implements GameState {
             this.backgroundTexture = null;
         }
         this.scene.background = null;
+
+        this.screenControlHandler?.destroy();
     }
 
     update(): void {
