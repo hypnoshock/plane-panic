@@ -179,7 +179,7 @@ export class PlayState implements GameState {
         this.player.update(deltaTime);
         this.keyboardHandler.update();
         this.bulletSystem.update(deltaTime);
-        this.enemySpawner.update();
+        this.enemySpawner.update(deltaTime);
 
         // Update energy display
         this.energyDisplay.textContent = `Energy: ${this.player.getLives()}`;

@@ -17,7 +17,7 @@ export class EnemySpawner {
         this.bulletSystem = bulletSystem;
     }
 
-    public update(): void {
+    public update(deltaTime: number): void {
         const currentTime = Date.now();
 
         // Spawn new enemies
@@ -30,11 +30,10 @@ export class EnemySpawner {
 
         // Update all enemies
         this.enemies = this.enemies.filter(enemy => {
-            enemy.update();
+            enemy.update(deltaTime);
             
             // Move enemy from right to left
             const position = enemy.getGroup().position;
-            position.x -= this.moveSpeed;
 
             // Remove enemy if it's gone off screen
             if (position.x < -10) {

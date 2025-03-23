@@ -4,7 +4,7 @@ import { Bullet as BulletModel } from '../game-models/Bullet';
 export class Bullet {
     private model: BulletModel;
     private group: THREE.Group;
-    private speed: number = 0.2;
+    private speed: number = 10; // Units per second
     private isEnemy: boolean;
 
     constructor(bullet: BulletModel, isEnemy: boolean = false) {
@@ -14,9 +14,9 @@ export class Bullet {
         this.group.add(this.model.getMesh());
     }
 
-    public update(): void {
+    public update(deltaTime: number): void {
         // Move the bullet forward or backward depending on isEnemy flag
-        this.group.position.x += this.speed * (this.isEnemy ? -1 : 1);
+        this.group.position.x += this.speed * deltaTime * (this.isEnemy ? -1 : 1);
     }
 
     public getGroup(): THREE.Group {

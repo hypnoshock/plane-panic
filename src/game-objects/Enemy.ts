@@ -5,7 +5,7 @@ import { BulletSystem } from '../system/BulletSystem';
 export class Enemy {
     private model: EnemyShip;
     private group: THREE.Group;
-    private moveSpeed: number = 0.05; // Slower than player
+    private moveSpeed: number = 2; // Units per second
     private direction: number = 1; // 1 for moving up, -1 for moving down
     private bulletSystem: BulletSystem;
     private lastShotTime: number = 0;
@@ -26,11 +26,12 @@ export class Enemy {
         this.group.position.copy(this.initialPosition);
     }
 
-    public update(): void {
+    public update(deltaTime: number): void {
         this.model.update();
         
         // Move the enemy up and down
-        this.group.position.y += this.moveSpeed * this.direction;
+        this.group.position.y += this.moveSpeed * deltaTime * this.direction;
+        this.group.position.x -= this.moveSpeed * deltaTime;
         
         // Change direction when reaching boundaries
         // Get absolute distance from current position to initial position
@@ -38,8 +39,6 @@ export class Enemy {
         
         // Change direction when moving 2 units away from initial position in either direction
         if (distanceFromStart >= 2) {
-            // Reset position to boundary to prevent overshooting
-            // this.group.position.y = this.initialPosition.y + (2 * Math.sign(this.group.position.y - this.initialPosition.y));
             this.direction *= -1;
         }
 

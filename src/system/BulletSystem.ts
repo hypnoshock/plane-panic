@@ -51,7 +51,7 @@ export class BulletSystem {
 
     public update(deltaTime: number): void {
         // Update all bullets
-        this.bullets.forEach(bullet => bullet.update());
+        this.bullets.forEach(bullet => bullet.update(deltaTime));
 
         // Update explosion system
         this.explosionSystem.update(deltaTime);
