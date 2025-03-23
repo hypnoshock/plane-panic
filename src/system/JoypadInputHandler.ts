@@ -8,12 +8,28 @@ export class JoypadInputHandler {
     private deadzone: number = 0.1; // 10% deadzone for analog sticks
     private connectedListener: (e: GamepadEvent) => void;
     private disconnectedListener: (e: GamepadEvent) => void;
+    private lastDirectionStates: { [key: string]: boolean } = {
+        up: false,
+        down: false,
+        left: false,
+        right: false
+    };
 
     constructor(eventHandler: JoypadEventHandler) {
         this.eventHandler = eventHandler;
         this.connectedListener = this.handleGamepadConnected.bind(this);
         this.disconnectedListener = this.handleGamepadDisconnected.bind(this);
         this.setupEventListeners();
+        
+        // Check for already connected gamepads
+        const gamepads = navigator.getGamepads();
+        for (let i = 0; i < gamepads.length; i++) {
+            const gamepad = gamepads[i];
+            if (gamepad) {
+                this.handleGamepadConnected({ gamepad } as GamepadEvent);
+                break;
+            }
+        }
     }
 
     private setupEventListeners(): void {
@@ -61,15 +77,28 @@ export class JoypadInputHandler {
     private handleAnalogStick(value: number, negativeEvent: string, positiveEvent: string): void {
         if (Math.abs(value) > this.deadzone) {
             if (value < 0) {
-                this.eventHandler(negativeEvent, true);
+                // Only trigger if this is the first frame of the press
+                if (!this.lastDirectionStates[negativeEvent]) {
+                    this.eventHandler(negativeEvent, true);
+                    this.lastDirectionStates[negativeEvent] = true;
+                }
                 this.eventHandler(positiveEvent, false);
+                this.lastDirectionStates[positiveEvent] = false;
             } else {
-                this.eventHandler(positiveEvent, true);
+                // Only trigger if this is the first frame of the press
+                if (!this.lastDirectionStates[positiveEvent]) {
+                    this.eventHandler(positiveEvent, true);
+                    this.lastDirectionStates[positiveEvent] = true;
+                }
                 this.eventHandler(negativeEvent, false);
+                this.lastDirectionStates[negativeEvent] = false;
             }
         } else {
+            // Reset both directions when in deadzone
             this.eventHandler(negativeEvent, false);
             this.eventHandler(positiveEvent, false);
+            this.lastDirectionStates[negativeEvent] = false;
+            this.lastDirectionStates[positiveEvent] = false;
         }
     }
 
@@ -97,5 +126,11 @@ export class JoypadInputHandler {
                 this.handleButton(index, false);
             });
         }
+
+        // Reset all direction states
+        Object.keys(this.lastDirectionStates).forEach(direction => {
+            this.eventHandler(direction, false);
+            this.lastDirectionStates[direction] = false;
+        });
     }
 } 
