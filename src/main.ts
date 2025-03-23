@@ -22,6 +22,7 @@ scene.add(ambientLight);
 camera.position.z = 5;
 
 // Create FPS counter
+const SHOW_FPS_COUNTER = false; // Set to true to show FPS counter
 const fpsCounter = document.createElement('div');
 fpsCounter.style.position = 'absolute';
 fpsCounter.style.bottom = '20px';
@@ -33,6 +34,7 @@ fpsCounter.style.zIndex = '1000';
 fpsCounter.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
 fpsCounter.style.padding = '8px 12px';
 fpsCounter.style.borderRadius = '4px';
+fpsCounter.style.display = SHOW_FPS_COUNTER ? 'block' : 'none';
 document.body.appendChild(fpsCounter);
 
 // FPS calculation variables
