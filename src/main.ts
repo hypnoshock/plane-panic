@@ -38,21 +38,13 @@ fpsCounter.style.fontFamily = 'Arial, sans-serif';
 fpsCounter.style.zIndex = '1000';
 document.body.appendChild(fpsCounter);
 
-// Game state
-let isGameOver: boolean = false;
-
 // FPS calculation variables
 let frameCount = 0;
 let lastFpsUpdate = 0;
 const fpsUpdateInterval = 500; // Update FPS display every 500ms
-
-function resetGame(): void {
-    // Hide game over screen
-    gameOverScreen.classList.remove('visible');
-    
-    // Reset game state
-    isGameOver = false;
-}
+let lastFrameTime = 0;
+let frameTimes: number[] = [];
+const frameTimeHistorySize = 60; // Keep track of last 60 frames
 
 // Create game state manager
 const gameStateManager = new GameStateManager(scene, camera, renderer);
@@ -72,11 +64,27 @@ function animate(currentTime: number): void {
     const deltaTime = (currentTime - lastTime) / 1000;
     lastTime = currentTime;
     
-    // Update FPS counter
+    // Track frame times for more accurate FPS calculation
+    if (lastFrameTime > 0) {
+        frameTimes.push(currentTime - lastFrameTime);
+        if (frameTimes.length > frameTimeHistorySize) {
+            frameTimes.shift();
+        }
+    }
+    lastFrameTime = currentTime;
+    
+    // Update FPS counter with more detailed information
     frameCount++;
     if (currentTime - lastFpsUpdate >= fpsUpdateInterval) {
-        const fps = Math.round((frameCount * 1000) / (currentTime - lastFpsUpdate));
-        fpsCounter.textContent = `FPS: ${fps}`;
+        // Calculate average frame time from history
+        const avgFrameTime = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+        const fps = Math.round(1000 / avgFrameTime);
+        
+        // Calculate min and max frame times
+        const minFrameTime = Math.min(...frameTimes);
+        const maxFrameTime = Math.max(...frameTimes);
+        
+        fpsCounter.textContent = `FPS: ${fps} | Frame Time: ${avgFrameTime.toFixed(2)}ms | Min: ${minFrameTime.toFixed(2)}ms | Max: ${maxFrameTime.toFixed(2)}ms`;
         frameCount = 0;
         lastFpsUpdate = currentTime;
     }
