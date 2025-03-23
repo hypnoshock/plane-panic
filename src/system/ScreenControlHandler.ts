@@ -67,6 +67,7 @@ export class ScreenControlHandler {
         // Create buttons container
         const buttonsContainer = document.createElement('div');
         buttonsContainer.style.cssText = `
+            margin-top: 50px;
             display: flex;
             gap: 20px;
             pointer-events: auto;
