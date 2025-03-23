@@ -63,7 +63,7 @@ export class MenuState implements GameState {
         this.menuContainer.style.textAlign = 'center';
         this.menuContainer.style.color = 'white';
         this.menuContainer.style.fontFamily = 'Arial, sans-serif';
-        this.menuContainer.style.fontSize = '32px';
+        this.menuContainer.style.fontSize = 'min(6vh, 32px)'; // Responsive font size
         this.menuContainer.style.zIndex = '1000';
         document.body.appendChild(this.menuContainer);
     }
@@ -198,17 +198,21 @@ export class MenuState implements GameState {
                     100% { transform: rotate(-2deg); }
                 }
                 .title {
-                    font-size: 72px;
+                    font-size: min(12vh, 72px);
                     font-weight: bold;
-                    margin-bottom: 40px;
+                    margin-bottom: min(5vh, 40px);
                     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
                     animation: gentleRotate 3s ease-in-out infinite;
                     display: inline-block;
                 }
+                .menu-item {
+                    margin: min(2vh, 20px);
+                    cursor: pointer;
+                }
             </style>
             <div class="title">Plane Panic</div>
             ${this.options.map((option, index) => 
-                `<div style="margin: 20px; cursor: pointer; ${index === this.selectedOption ? 'color: #ff0000;' : ''}">${option}</div>`
+                `<div class="menu-item" style="${index === this.selectedOption ? 'color: #ff0000;' : ''}">${option}</div>`
             ).join('')}
         `;
     }
