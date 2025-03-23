@@ -7,6 +7,7 @@ export class ScreenControlHandler {
     private button1: HTMLDivElement = document.createElement('div');
     private button2: HTMLDivElement = document.createElement('div');
     private isActive: boolean = false;
+    private activeDirections: Set<string> = new Set();
 
     constructor(eventHandler: ScreenControlEventHandler) {
         this.eventHandler = eventHandler;
@@ -177,33 +178,70 @@ export class ScreenControlHandler {
 
             // Horizontal movement
             if (normalizedX > threshold) {
-                this.eventHandler('right', true);
-                this.eventHandler('left', false);
+                if (!this.activeDirections.has('right')) {
+                    this.activeDirections.add('right');
+                    this.eventHandler('right', true);
+                }
+                if (this.activeDirections.has('left')) {
+                    this.activeDirections.delete('left');
+                    this.eventHandler('left', false);
+                }
             } else if (normalizedX < -threshold) {
-                this.eventHandler('left', true);
-                this.eventHandler('right', false);
+                if (!this.activeDirections.has('left')) {
+                    this.activeDirections.add('left');
+                    this.eventHandler('left', true);
+                }
+                if (this.activeDirections.has('right')) {
+                    this.activeDirections.delete('right');
+                    this.eventHandler('right', false);
+                }
             } else {
-                this.eventHandler('left', false);
-                this.eventHandler('right', false);
+                if (this.activeDirections.has('left')) {
+                    this.activeDirections.delete('left');
+                    this.eventHandler('left', false);
+                }
+                if (this.activeDirections.has('right')) {
+                    this.activeDirections.delete('right');
+                    this.eventHandler('right', false);
+                }
             }
 
             // Vertical movement
             if (normalizedY > threshold) {
-                this.eventHandler('down', true);
-                this.eventHandler('up', false);
+                if (!this.activeDirections.has('down')) {
+                    this.activeDirections.add('down');
+                    this.eventHandler('down', true);
+                }
+                if (this.activeDirections.has('up')) {
+                    this.activeDirections.delete('up');
+                    this.eventHandler('up', false);
+                }
             } else if (normalizedY < -threshold) {
-                this.eventHandler('up', true);
-                this.eventHandler('down', false);
+                if (!this.activeDirections.has('up')) {
+                    this.activeDirections.add('up');
+                    this.eventHandler('up', true);
+                }
+                if (this.activeDirections.has('down')) {
+                    this.activeDirections.delete('down');
+                    this.eventHandler('down', false);
+                }
             } else {
-                this.eventHandler('up', false);
-                this.eventHandler('down', false);
+                if (this.activeDirections.has('up')) {
+                    this.activeDirections.delete('up');
+                    this.eventHandler('up', false);
+                }
+                if (this.activeDirections.has('down')) {
+                    this.activeDirections.delete('down');
+                    this.eventHandler('down', false);
+                }
             }
         } else {
             // Reset all directions when in dead zone
-            this.eventHandler('left', false);
-            this.eventHandler('right', false);
-            this.eventHandler('up', false);
-            this.eventHandler('down', false);
+            const directionsToReset = Array.from(this.activeDirections);
+            directionsToReset.forEach(direction => {
+                this.activeDirections.delete(direction);
+                this.eventHandler(direction, false);
+            });
         }
     }
 
@@ -213,6 +251,13 @@ export class ScreenControlHandler {
     }
 
     public destroy(): void {
+        // Reset all active directions when destroying
+        const directionsToReset = Array.from(this.activeDirections);
+        directionsToReset.forEach(direction => {
+            this.eventHandler(direction, false);
+        });
+        this.activeDirections.clear();
+        
         if (this.container && this.container.parentNode) {
             this.container.parentNode.removeChild(this.container);
         }
