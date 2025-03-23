@@ -37,7 +37,10 @@ export class EnemySpawner {
             const position = enemy.getGroup().position;
 
             // Remove enemy if it's gone off screen
-            if (position.x < -10) {
+            // For regular enemies and fast enemies, remove when x < -10
+            // For BigDumper, remove when x > 10
+            if ((enemy instanceof BigDumper && position.x > 10) || 
+                (!(enemy instanceof BigDumper) && position.x < -10)) {
                 this.scene.remove(enemy.getGroup());
                 this.bulletSystem.removeEnemy(enemy);
                 return false;
@@ -55,22 +58,18 @@ export class EnemySpawner {
         // 20% chance for fast enemy, 10% for big dumper, 70% for regular enemy
         if (random < 0.2) {
             enemy = new FastEnemy(this.bulletSystem);
-            // Position enemy off the right side of the screen
-            const randomY = (Math.random() * 8) - 4; // Random Y between -4 and 4
-            const initialPosition = new THREE.Vector3(10, randomY, 0);
-            enemy.setPosition(initialPosition);
         } else if (random < 0.3) {
             enemy = new BigDumper(this.bulletSystem);
-            const initialPosition = new THREE.Vector3(10, 3, 0);
-            enemy.setPosition(initialPosition);
         } else {
             enemy = new Enemy(this.bulletSystem);
-            // Position enemy off the right side of the screen
-            const randomY = (Math.random() * 8) - 4; // Random Y between -4 and 4
-            const initialPosition = new THREE.Vector3(10, randomY, 0);
-            enemy.setPosition(initialPosition);
         }
         
+        // Position enemy off the screen
+        // For BigDumper, spawn from left side, for others spawn from right side
+        const spawnX = enemy instanceof BigDumper ? -10 : 10;
+        const spawnY = enemy instanceof BigDumper ? 3 :(Math.random() * 8) - 4; // Random Y between -4 and 4
+        const initialPosition = new THREE.Vector3(spawnX, spawnY, 0);
+        enemy.setPosition(initialPosition);
         
         this.scene.add(enemy.getGroup());
         this.enemies.push(enemy);

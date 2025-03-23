@@ -14,8 +14,8 @@ export class BigDumper extends Enemy {
         this.group = new THREE.Group();
         this.group.add(this.model.getGroup());
         
-        // Rotate the enemy ship to face the player
-        this.group.rotation.y = Math.PI;
+        // No rotation needed since we want it to face right like the player
+        // this.group.rotation.y = Math.PI;
 
         // Set initial position
         this.group.position.copy(this.initialPosition);
@@ -24,8 +24,8 @@ export class BigDumper extends Enemy {
     public update(deltaTime: number): void {
         this.model.update();
         
-        // Move straight towards the player (left)
-        this.group.position.x -= this.moveSpeed * deltaTime;
+        // Move straight towards the player (right)
+        this.group.position.x += this.moveSpeed * deltaTime;
 
         // Try to shoot
         this.tryShoot();

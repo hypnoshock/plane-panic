@@ -77,6 +77,7 @@ export class PlayState implements GameState {
         this.energyDisplay.style.color = 'white';
         this.energyDisplay.style.fontSize = '24px';
         this.energyDisplay.style.fontFamily = 'Arial, sans-serif';
+        this.energyDisplay.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
         this.energyDisplay.textContent = 'Energy: 3';
         document.body.appendChild(this.energyDisplay);
 

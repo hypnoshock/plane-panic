@@ -13,7 +13,7 @@ export class KeyboardHandler {
         window.addEventListener('keydown', (event) => {
             const key = event.key.toLowerCase();
             // Only handle game control keys
-            if (['w', 'a', 's', 'd', ' ', 'enter'].includes(key)) {
+            if (['w', 'a', 's', 'd', ' ', 'enter', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
                 event.preventDefault();
                 event.stopPropagation();
                 if (!this.keys.has(key)) {
@@ -26,7 +26,7 @@ export class KeyboardHandler {
         window.addEventListener('keyup', (event) => {
             const key = event.key.toLowerCase();
             // Only handle game control keys
-            if (['w', 'a', 's', 'd', ' ', 'enter'].includes(key)) {
+            if (['w', 'a', 's', 'd', ' ', 'enter', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) {
                 event.preventDefault();
                 event.stopPropagation();
                 if (this.keys.has(key)) {
@@ -40,15 +40,19 @@ export class KeyboardHandler {
     private handleKeyEvent(key: string, isPress: boolean): void {
         switch (key) {
             case 'w':
+            case 'arrowup':
                 this.eventHandler('up', isPress);
                 break;
             case 's':
+            case 'arrowdown':
                 this.eventHandler('down', isPress);
                 break;
             case 'a':
+            case 'arrowleft':
                 this.eventHandler('left', isPress);
                 break;
             case 'd':
+            case 'arrowright':
                 this.eventHandler('right', isPress);
                 break;
             case ' ':

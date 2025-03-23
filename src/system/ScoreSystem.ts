@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 export class ScoreSystem {
     private score: number = 0;
     private hiScore: number = 0;
@@ -19,6 +21,7 @@ export class ScoreSystem {
         this.scoreElement.style.color = 'white';
         this.scoreElement.style.fontSize = '24px';
         this.scoreElement.style.fontFamily = 'Arial, sans-serif';
+        this.scoreElement.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
         this.scoreElement.textContent = 'Score: 0';
         document.body.appendChild(this.scoreElement);
 
@@ -31,6 +34,7 @@ export class ScoreSystem {
         this.hiScoreElement.style.color = '#ffd700'; // Gold color for hi-score
         this.hiScoreElement.style.fontSize = '24px';
         this.hiScoreElement.style.fontFamily = 'Arial, sans-serif';
+        this.hiScoreElement.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.5)';
         this.hiScoreElement.textContent = `Hi-Score: ${this.hiScore}`;
         document.body.appendChild(this.hiScoreElement);
     }
