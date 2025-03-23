@@ -182,6 +182,7 @@ export class PlayState implements GameState {
 
         // Clean up input handlers
         this.screenControlHandler.destroy();
+        this.keyboardHandler.destroy();
 
         // Clean up background texture
         if (this.backgroundTexture) {

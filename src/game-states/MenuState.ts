@@ -211,6 +211,7 @@ export class MenuState implements GameState {
         this.scene.background = null;
 
         this.screenControlHandler?.destroy();
+        this.keyboardHandler.destroy();
     }
 
     update(): void {

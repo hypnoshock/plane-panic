@@ -98,4 +98,52 @@ window.addEventListener('resize', () => {
 }, false);
 
 // Start animation
-animate(0); 
+animate(0);
+
+// Add orientation check for mobile devices
+const orientationMessage = document.createElement('div');
+orientationMessage.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    display: none;
+    z-index: 2000;
+    font-family: Arial, sans-serif;
+`;
+
+const orientationIcon = document.createElement('div');
+orientationIcon.style.cssText = `
+    font-size: 48px;
+    margin-bottom: 10px;
+`;
+orientationIcon.textContent = '📱';
+
+const orientationText = document.createElement('div');
+orientationText.style.cssText = `
+    font-size: 18px;
+    margin-bottom: 10px;
+`;
+orientationText.textContent = 'Please rotate your device to landscape mode';
+
+orientationMessage.appendChild(orientationIcon);
+orientationMessage.appendChild(orientationText);
+document.body.appendChild(orientationMessage);
+
+function checkOrientation() {
+    if (window.innerWidth < window.innerHeight && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        orientationMessage.style.display = 'block';
+    } else {
+        orientationMessage.style.display = 'none';
+    }
+}
+
+// Check orientation on load and resize
+window.addEventListener('load', checkOrientation);
+window.addEventListener('resize', checkOrientation);
+window.addEventListener('orientationchange', checkOrientation); 
