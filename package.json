@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy": "./deploy.sh"
   },
   "devDependencies": {
     "@types/three": "^0.174.0",
