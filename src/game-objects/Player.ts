@@ -12,12 +12,18 @@ export class Player {
     private initialPosition: THREE.Vector3;
     private lives: number = 3;
     private isGameOver: boolean = false;
+    private isFlashing: boolean = false;
+    private flashStartTime: number = 0;
+    private flashDuration: number = 200; // Duration in milliseconds
+    private originalColor: number = 0x4169e1;
+    private flashColor: number = 0xffffff;
 
     constructor(spaceship: Spaceship) {
         this.model = spaceship;
         this.group = new THREE.Group();
         this.group.add(this.model.getGroup());
         this.initialPosition = new THREE.Vector3(0, 0, 0);
+        this.originalColor = this.model.getColor();
     }
 
     public setBulletSystem(bulletSystem: BulletSystem): void {
@@ -27,6 +33,21 @@ export class Player {
     public update(): void {
         if (this.isGameOver) return;
         this.model.update();
+
+        // Handle flash effect
+        if (this.isFlashing) {
+            const currentTime = Date.now();
+            const elapsed = currentTime - this.flashStartTime;
+            
+            if (elapsed >= this.flashDuration) {
+                this.isFlashing = false;
+                this.model.setColor(this.originalColor);
+            } else {
+                // Alternate between flash color and original color
+                const isWhite = Math.floor(elapsed / 50) % 2 === 0;
+                this.model.setColor(isWhite ? this.flashColor : this.originalColor);
+            }
+        }
     }
 
     public getGroup(): THREE.Group {
@@ -84,6 +105,9 @@ export class Player {
 
     public takeDamage(): void {
         this.lives--;
+        this.isFlashing = true;
+        this.flashStartTime = Date.now();
+        
         if (this.lives <= 0) {
             this.isGameOver = true;
             this.hideShip();
@@ -93,6 +117,8 @@ export class Player {
     public reset(): void {
         this.lives = 3;
         this.isGameOver = false;
+        this.isFlashing = false;
+        this.model.setColor(this.originalColor);
         this.resetPosition();
     }
 
