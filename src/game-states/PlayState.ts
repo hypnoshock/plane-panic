@@ -107,7 +107,7 @@ export class PlayState implements GameState {
 
     private handleInput(event: string, isPress: boolean): void {
         if (this.isGameOver) {
-            if (event === 'button2' && isPress) {
+            if (event === 'button2' || event === 'button1' && isPress) {
                 const menuState = new MenuState(this.scene, this.camera, this.renderer);
                 menuState.setGameStateManager(this.gameStateManager);
                 this.gameStateManager.setState(menuState);

@@ -167,8 +167,8 @@ export class ScreenControlHandler {
         // Calculate distance from center
         const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         
-        // Only trigger if touch is outside dead zone (20% of radius)
-        if (distance > rect.width * 0.2) {
+        // Only trigger if touch is outside dead zone (10% of radius)
+        if (distance > rect.width * 0.1) {
             // Normalize the direction vector
             const normalizedX = deltaX / distance;
             const normalizedY = deltaY / distance;
